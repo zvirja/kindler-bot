@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using KindlerBot.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -11,22 +12,27 @@ namespace KindlerBot.Services
     internal class WebhookConfiguration: IHostedService
     {
         private readonly ITelegramBotClient _telegramBotClient;
+        private readonly DeploymentConfiguration _deploymentConfig;
         private readonly ILogger<WebhookConfiguration> _logger;
-        private BotConfiguration _botConfiguration;
+        private BotConfiguration _botConfig;
 
-        public WebhookConfiguration(ITelegramBotClient telegramBotClient, IOptions<BotConfiguration> botConfiguration, ILogger<WebhookConfiguration> logger)
+        public WebhookConfiguration(ITelegramBotClient telegramBotClient,
+            IOptions<BotConfiguration> botConfig,
+            IOptions<DeploymentConfiguration> deploymentConfig,
+            ILogger<WebhookConfiguration> logger)
         {
             _telegramBotClient = telegramBotClient;
+            _botConfig = botConfig.Value;
+            _deploymentConfig = deploymentConfig.Value;
             _logger = logger;
-            _botConfiguration = botConfiguration.Value;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            Uri url = new(_botConfiguration.PublicUrl, $"webhook/{_botConfiguration.WebhookUrlSecret}");
+            Uri url = new(_deploymentConfig.PublicUrl, $"webhook/{_botConfig.WebhookUrlSecret}");
             await _telegramBotClient.SetWebhookAsync(url.ToString(), cancellationToken: cancellationToken);
 
-            _logger.LogInformation("Registered webhook url");
+            _logger.LogInformation("Registered webhook url: {url}", url);
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)

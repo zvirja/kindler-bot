@@ -9,6 +9,14 @@ namespace KindlerBot.Commands
 {
     internal class TelegramCommands : ITelegramCommands
     {
+        private static class Constants
+        {
+            public const string StartCmd = "/start";
+            public const string HelpCmd = "/help";
+            public const string ConfigureCmd = "/configure";
+            public const string GetConfigurationCmd = "/getconfig";
+        }
+
         private readonly IMediator _mediator;
 
         public TelegramCommands(IMediator mediator)
@@ -18,9 +26,9 @@ namespace KindlerBot.Commands
 
         public IEnumerable<BotCommand> AvailableCommands { get; } = new BotCommand[]
         {
-            new() { Command = "/help", Description = "Get usage info" },
-            new() { Command = "/configure", Description = "Configure my preferences" },
-            new() { Command = "/getconfig", Description = "Get my preferences" },
+            new() { Command = Constants.HelpCmd, Description = "Get usage info" },
+            new() { Command = Constants.ConfigureCmd, Description = "Configure my preferences" },
+            new() { Command = Constants.GetConfigurationCmd, Description = "Get my preferences" },
         };
 
         public async Task DispatchUpdate(Update update, CancellationToken ct)
@@ -31,28 +39,33 @@ namespace KindlerBot.Commands
             }
 
             var message = update.Message;
+            bool IsTextMessage(string msg) => message.Type == MessageType.Text && message.Text == msg;
 
-            if (IsTextMessage("/start") || IsTextMessage("/help"))
+            if (IsTextMessage(Constants.StartCmd) || IsTextMessage(Constants.HelpCmd))
             {
                 await _mediator.Send(new HelpCmdRequest(message.Chat), ct);
                 return;
             }
 
-            if (IsTextMessage("/configure"))
+            if (IsTextMessage(Constants.ConfigureCmd))
             {
                 await _mediator.Send(new ConfigureCmdRequest(message.Chat), ct);
                 return;
             }
 
-            if (IsTextMessage("/getconfig"))
+            if (IsTextMessage(Constants.GetConfigurationCmd))
             {
                 await _mediator.Send(new GetConfigurationCmdRequest(message.Chat), ct);
                 return;
             }
 
-            await _mediator.Send(new UnknownCmdRequest(update), ct);
+            if (message.Type == MessageType.Document)
+            {
+                await _mediator.Send(new ConvertCmdRequest(message.Document, message.Chat), ct);
+                return;
+            }
 
-            bool IsTextMessage(string msg) => message.Type == MessageType.Text && message.Text == msg;
+            await _mediator.Send(new UnknownCmdRequest(update), ct);
         }
     }
 }

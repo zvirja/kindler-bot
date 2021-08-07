@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using KindlerBot.Commands;
+using KindlerBot.Configuration;
 using KindlerBot.Workflow;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;

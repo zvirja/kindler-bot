@@ -16,11 +16,11 @@ namespace KindlerBot.Commands
     internal class ConfigureCmdHandler: IRequestHandler<ConfigureCmdRequest>, IRequestHandler<GetConfigurationCmdRequest>
     {
         private readonly IWorkflowManager _workflowManager;
-        private readonly IConfigurationManager _configManager;
+        private readonly IConfigStore _configManager;
         private readonly ITelegramBotClient _botClient;
         private readonly ILogger<ConfigureCmdHandler> _logger;
 
-        public ConfigureCmdHandler(IWorkflowManager workflowManager, IConfigurationManager configManager, ITelegramBotClient botClient, ILogger<ConfigureCmdHandler> logger)
+        public ConfigureCmdHandler(IWorkflowManager workflowManager, IConfigStore configManager, ITelegramBotClient botClient, ILogger<ConfigureCmdHandler> logger)
         {
             _workflowManager = workflowManager;
             _configManager = configManager;

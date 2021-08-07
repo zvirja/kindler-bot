@@ -5,10 +5,10 @@ using Microsoft.Extensions.Hosting;
 using System;
 using KindlerBot.Commands;
 using KindlerBot.Configuration;
+using KindlerBot.Conversion;
 using KindlerBot.Services;
 using KindlerBot.Workflow;
 using MediatR;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
 
@@ -16,13 +16,6 @@ namespace KindlerBot
 {
     public class Startup
     {
-        private readonly IConfiguration _configuration;
-
-        public Startup(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
-
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
@@ -32,14 +25,19 @@ namespace KindlerBot
             services.AddHostedService<WebhookConfiguration>();
             services.AddHostedService<CommandConfiguration>();
 
-            services.Configure<BotConfiguration>(_configuration.GetSection(BotConfiguration.SectionName));
-            services.PostConfigure<BotConfiguration>(config =>
-            {
-                if (config.WebhookUrlSecret == null)
+
+            services.AddOptions<BotConfiguration>()
+                .BindConfiguration(BotConfiguration.SectionName)
+                .PostConfigure(config =>
                 {
-                    config.WebhookUrlSecret = Guid.NewGuid().ToString("N");
-                }
-            });
+                    if (config.WebhookUrlSecret == null)
+                    {
+                        config.WebhookUrlSecret = Guid.NewGuid().ToString("N");
+                    }
+                });
+            services.AddOptions<DeploymentConfiguration>().BindConfiguration(DeploymentConfiguration.SectionName);
+            services.AddOptions<SmtpConfiguration>().BindConfiguration(SmtpConfiguration.SectionName);
+            services.AddOptions<CalibreCliConfiguration>().BindConfiguration(CalibreCliConfiguration.SectionName);
 
             services.AddHttpClient<ITelegramBotClient, TelegramBotClient>((httpClient, sp) =>
                 new TelegramBotClient(sp.GetRequiredService<IOptions<BotConfiguration>>().Value.BotToken, httpClient));
@@ -48,15 +46,23 @@ namespace KindlerBot
 
             services.AddSingleton<ITelegramCommands, TelegramCommands>();
             services.AddSingleton<IWorkflowManager, WorkflowManager>();
-            services.AddSingleton<IConfigurationManager, ConfigurationManager>();
+            services.AddSingleton<IConfigStore, FileSystemConfigStore>();
+            services.AddSingleton<ICalibreCli, CalibreCli>();
+            services.AddSingleton<ICalibreCliExec, CalibreCliExec>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IOptions<DeploymentConfiguration> deployConfig)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+            }
+
+            var deployUrlSubPath = deployConfig.Value.PublicUrl.LocalPath;
+            if (!string.IsNullOrEmpty(deployUrlSubPath))
+            {
+                app.UsePathBase(deployUrlSubPath);
             }
 
             app.UseRouting();
