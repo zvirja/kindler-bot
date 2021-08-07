@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31515.178
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KindlerBot", "KindlerBot\KindlerBot.csproj", "{FCA9C4D8-AAFA-4AD1-9FF6-0776A6D5F622}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3E950A5F-49F2-48D9-9CB5-969BCA51EF4E}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FCA9C4D8-AAFA-4AD1-9FF6-0776A6D5F622}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCA9C4D8-AAFA-4AD1-9FF6-0776A6D5F622}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCA9C4D8-AAFA-4AD1-9FF6-0776A6D5F622}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCA9C4D8-AAFA-4AD1-9FF6-0776A6D5F622}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EA0FF2AF-EBBC-4274-9018-B69155B9839E}
+	EndGlobalSection
+EndGlobal
