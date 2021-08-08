@@ -38,6 +38,7 @@ namespace KindlerBot
             services.AddOptions<DeploymentConfiguration>().BindConfiguration(DeploymentConfiguration.SectionName);
             services.AddOptions<SmtpConfiguration>().BindConfiguration(SmtpConfiguration.SectionName);
             services.AddOptions<CalibreCliConfiguration>().BindConfiguration(CalibreCliConfiguration.SectionName);
+            services.AddOptions<ConversionConfiguration>().BindConfiguration(ConversionConfiguration.SectionName);
 
             services.AddHttpClient<ITelegramBotClient, TelegramBotClient>((httpClient, sp) =>
                 new TelegramBotClient(sp.GetRequiredService<IOptions<BotConfiguration>>().Value.BotToken, httpClient));

@@ -1,5 +1,4 @@
 ﻿#nullable disable warnings
-using System;
 
 namespace KindlerBot.Configuration
 {
@@ -10,14 +9,5 @@ namespace KindlerBot.Configuration
         public string BotToken { get; set; }
 
         public string WebhookUrlSecret { get; set; }
-    }
-
-    public class DeploymentConfiguration
-    {
-        public const string SectionName = "Deployment";
-
-        public Uri PublicUrl { get; set; }
-
-        public string ConfigStore { get; set; }
     }
 }

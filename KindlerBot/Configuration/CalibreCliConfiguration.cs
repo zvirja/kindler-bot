@@ -2,7 +2,7 @@
 
 namespace KindlerBot.Configuration
 {
-    internal class CalibreCliConfiguration
+    public class CalibreCliConfiguration
     {
         public const string SectionName = "CalibreCli";
 
