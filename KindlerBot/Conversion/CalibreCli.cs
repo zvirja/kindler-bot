@@ -24,6 +24,17 @@ namespace KindlerBot.Conversion
         public async Task<CalibreResult<BookInfo>> GetBookInfo(string filePath)
         {
             var (exitCode, output) = await _cliExec.RunCalibre(CalibreCliApp.Meta, new[] { Quote(filePath) });
+
+            const string unknown = "<unknown>";
+
+            // Calibre could return values even if reports an error. For instance, for PDF
+            var title = GetKeyedOutputValue("Title", output);
+            var author = GetKeyedOutputValue("Author(s)", output);
+            if (title != null || author != null)
+            {
+                return CalibreResult<BookInfo>.Successful(new BookInfo(title ?? unknown, author ?? unknown));
+            }
+
             var error = GetCalibreError(output);
             if (exitCode != 0 || error != null)
             {
@@ -31,10 +42,7 @@ namespace KindlerBot.Conversion
                 return CalibreResult<BookInfo>.Failed(error ?? "Calibre exited with error code");
             }
 
-            var title = GetKeyedOutputValue("Title", output)!;
-            var author = GetKeyedOutputValue("Author(s)", output)!;
-
-            return CalibreResult<BookInfo>.Successful(new BookInfo(title, author));
+            return CalibreResult<BookInfo>.Successful(new BookInfo(title ?? unknown, author ?? unknown));
         }
 
         public async Task<CalibreResult> ExportCover(string filePath, string coverOutputPath)

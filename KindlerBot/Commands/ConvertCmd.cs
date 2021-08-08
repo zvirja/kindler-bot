@@ -68,15 +68,17 @@ namespace KindlerBot.Commands
                 {
                     await _botClient.DownloadFileAsync(fileInfo.FilePath, sourceFileStream);
                 }
+                await _botClient.SendTextMessageAsync(chat, "✅ Downloaded!");
 
                 var bookInfo = await _calibreCli.GetBookInfo(sourceFilePath);
-                if (!bookInfo.IsSuccessful)
+                if (bookInfo.IsSuccessful)
                 {
-                    await _botClient.SendTextMessageAsync(chat, $"😢 Unable to find book in the file you sent. Error: {bookInfo.Error}");
-                    return;
+                    await _botClient.SendTextMessageAsync(chat, $"📖 Book info\nTitle: {bookInfo.Value.Title}\nAuthor: {bookInfo.Value.Author}");
                 }
-
-                await _botClient.SendTextMessageAsync(chat, $"☑ Downloaded!\nTitle: {bookInfo.Value.Title}\nAuthor: {bookInfo.Value.Author}");
+                else
+                {
+                    await _botClient.SendTextMessageAsync(chat, $"⚠ Unable to get book metadata from the file you sent. Error: {bookInfo.Error}");
+                }
 
                 var bookCoverPath = sourceFilePath + ".cover.jpg";
                 var hasCover = await _calibreCli.ExportCover(sourceFilePath, bookCoverPath);
