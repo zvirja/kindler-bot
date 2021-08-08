@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
@@ -58,7 +59,12 @@ namespace KindlerBot.Configuration
             await File.WriteAllTextAsync(GetConfigPath(), JsonConvert.SerializeObject(config));
         }
 
-        private string GetConfigPath() => string.IsNullOrEmpty(_deploymentConfig.ConfigStore) ? "config.json" : Path.Join(_deploymentConfig.ConfigStore, "config.json");
+        private string GetConfigPath()
+        {
+            return string.IsNullOrEmpty(_deploymentConfig.ConfigStore)
+                ? Path.Join(Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location), "config.json")
+                : Path.Join(_deploymentConfig.ConfigStore, "config.json");
+        }
 
         private class Config
         {
