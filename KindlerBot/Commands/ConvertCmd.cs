@@ -60,7 +60,7 @@ namespace KindlerBot.Commands
                     tempDir.SuppressCleanup();
                 }
 
-                await _botClient.SendTextMessageAsync(chat, "⏬ Downloading file");
+                await _botClient.SendTextMessageAsync(chat, "⏬ Downloading file...");
                 var fileInfo = await _botClient.GetFileAsync(doc.FileId);
 
                 var sourceFilePath = Path.Join(tempDir.DirPath, doc.FileName);
@@ -86,17 +86,30 @@ namespace KindlerBot.Commands
                     await _botClient.SendPhotoAsync(chat, new InputMedia(coverFileStream, Path.GetFileName(bookCoverPath)));
                 }
 
-                await _botClient.SendTextMessageAsync(chat, "🔃 Converting book");
-
-                var convertedFilePath = sourceFilePath + ".mobi";
-                var conversionResult = await _calibreCli.ConvertBook(sourceFilePath, convertedFilePath);
-                if (!conversionResult.IsSuccessful)
+                string convertedFilePath;
+                if (doc.FileName.EndsWith(".pdf"))
                 {
-                    await _botClient.SendTextMessageAsync(chat, $"😢 Conversion failed. Error: {conversionResult.Error}");
-                    return;
+                    convertedFilePath = sourceFilePath;
+                    await _botClient.SendTextMessageAsync(chat, $"ℹ Conversion skipped for PDF");
+                }
+                else
+                {
+                    await _botClient.SendTextMessageAsync(chat, "🔃 Converting book...");
+
+                    convertedFilePath = sourceFilePath + ".mobi";
+                    var conversionResult = await _calibreCli.ConvertBook(sourceFilePath, convertedFilePath);
+                    if (conversionResult.IsSuccessful)
+                    {
+                        await _botClient.SendTextMessageAsync(chat, $"✔ Converted to MOBI.");
+                    }
+                    else
+                    {
+                        await _botClient.SendTextMessageAsync(chat, $"😢 Conversion failed. Error: {conversionResult.Error}");
+                        return;
+                    }
                 }
 
-                await _botClient.SendTextMessageAsync(chat, $"💌 Converted. Sending to your Kindle device...");
+                await _botClient.SendTextMessageAsync(chat, $"💌 Sending to your Kindle device...");
                 var sendResult = await _calibreCli.SendBookToEmail(convertedFilePath, email);
                 if (!sendResult.IsSuccessful)
                 {
