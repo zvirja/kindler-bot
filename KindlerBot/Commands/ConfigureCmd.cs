@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using KindlerBot.Configuration;
-using KindlerBot.Workflow;
+using KindlerBot.Interactivity;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
@@ -15,14 +15,14 @@ namespace KindlerBot.Commands
 
     internal class ConfigureCmdHandler: IRequestHandler<ConfigureCmdRequest>, IRequestHandler<GetConfigurationCmdRequest>
     {
-        private readonly IWorkflowManager _workflowManager;
+        private readonly IInteractionManager _interactionManager;
         private readonly IConfigStore _configManager;
         private readonly ITelegramBotClient _botClient;
         private readonly ILogger<ConfigureCmdHandler> _logger;
 
-        public ConfigureCmdHandler(IWorkflowManager workflowManager, IConfigStore configManager, ITelegramBotClient botClient, ILogger<ConfigureCmdHandler> logger)
+        public ConfigureCmdHandler(IInteractionManager interactionManager, IConfigStore configManager, ITelegramBotClient botClient, ILogger<ConfigureCmdHandler> logger)
         {
-            _workflowManager = workflowManager;
+            _interactionManager = interactionManager;
             _configManager = configManager;
             _botClient = botClient;
             _logger = logger;
@@ -51,7 +51,7 @@ namespace KindlerBot.Commands
             {
                 await _botClient.SendTextMessageAsync(chat, "Please enter your @kindle.com address");
 
-                var mailReply = await _workflowManager.AwaitNextUpdate(chat);
+                var mailReply = await _interactionManager.AwaitNextUpdate(chat);
                 var mailAddress = mailReply.TryGetTextMessage();
                 if (mailAddress == null || !mailAddress.EndsWith("@kindle.com"))
                 {

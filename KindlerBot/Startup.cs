@@ -6,9 +6,9 @@ using System;
 using KindlerBot.Commands;
 using KindlerBot.Configuration;
 using KindlerBot.Conversion;
+using KindlerBot.Interactivity;
 using KindlerBot.Security;
 using KindlerBot.Services;
-using KindlerBot.Workflow;
 using MediatR;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
@@ -48,7 +48,7 @@ namespace KindlerBot
 
             services.AddSingleton<IChatAuthorization, ChatAuthorization>();
             services.AddSingleton<ITelegramCommands, TelegramCommands>();
-            services.AddSingleton<IWorkflowManager, WorkflowManager>();
+            services.AddSingleton<IInteractionManager, InteractionManager>();
             services.AddSingleton<IConfigStore, FileSystemConfigStore>();
             services.AddSingleton<ICalibreCli, CalibreCli>();
             services.AddSingleton<ICalibreCliExec, CalibreCliExec>();

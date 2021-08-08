@@ -2,19 +2,19 @@
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 
-namespace KindlerBot.Workflow
+namespace KindlerBot.Interactivity
 {
-    internal class WorkflowManager : IWorkflowManager
+    internal class InteractionManager : IInteractionManager
     {
-        private readonly ConcurrentDictionary<ChatId, TaskCompletionSource<Update>> _workflows = new();
+        private readonly ConcurrentDictionary<ChatId, TaskCompletionSource<Update>> _interactions = new();
 
-        public bool ResumeWorkflow(Update update)
+        public bool ResumeInteraction(Update update)
         {
             var chatId = update.TryGetChatId();
             if (chatId == null)
                 return false;
 
-            if (_workflows.TryRemove(chatId, out var outgoingWorkflow))
+            if (_interactions.TryRemove(chatId, out var outgoingWorkflow))
             {
                 outgoingWorkflow.SetResult(update);
                 return true;
@@ -25,13 +25,13 @@ namespace KindlerBot.Workflow
 
         public Task<Update> AwaitNextUpdate(ChatId chatId)
         {
-            if (_workflows.TryGetValue(chatId, out var outgoingWorkflow))
+            if (_interactions.TryGetValue(chatId, out var outgoingWorkflow))
             {
                 outgoingWorkflow.SetCanceled();
             }
 
             var tcs = new TaskCompletionSource<Update>();
-            _workflows[chatId] = tcs;
+            _interactions[chatId] = tcs;
 
             return tcs.Task;
         }
