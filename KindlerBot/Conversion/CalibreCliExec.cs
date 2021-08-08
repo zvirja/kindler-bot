@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
 using KindlerBot.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace KindlerBot.Conversion
@@ -15,9 +13,11 @@ namespace KindlerBot.Conversion
     internal class CalibreCliExec : ICalibreCliExec
     {
         private readonly CalibreCliConfiguration _cliConfig;
+        private readonly ILogger<CalibreCliExec> _logger;
 
-        public CalibreCliExec(IOptions<CalibreCliConfiguration> cliConfig)
+        public CalibreCliExec(IOptions<CalibreCliConfiguration> cliConfig, ILogger<CalibreCliExec> logger)
         {
+            _logger = logger;
             _cliConfig = cliConfig.Value;
         }
 
@@ -46,6 +46,7 @@ namespace KindlerBot.Conversion
             psi.RedirectStandardOutput = true;
             psi.RedirectStandardError = true;
 
+            _logger.LogDebug("Running CalibreCli: {path} {args}", exePath, argsLine);
             var process = Process.Start(psi) ?? throw new InvalidOperationException($"Unable to start Calibre CLI process. Tool: {appName}");
 
             await process.WaitForExitAsync();

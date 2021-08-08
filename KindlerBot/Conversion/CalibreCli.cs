@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using KindlerBot.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace KindlerBot.Conversion
@@ -11,11 +12,13 @@ namespace KindlerBot.Conversion
     {
         private readonly ICalibreCliExec _cliExec;
         private readonly SmtpConfiguration _smtpConfiguration;
+        private readonly ILogger<CalibreCli> _logger;
 
-        public CalibreCli(ICalibreCliExec cliExec, IOptions<SmtpConfiguration> smtpConfiguration)
+        public CalibreCli(ICalibreCliExec cliExec, IOptions<SmtpConfiguration> smtpConfiguration, ILogger<CalibreCli> logger)
         {
             _cliExec = cliExec;
             _smtpConfiguration = smtpConfiguration.Value;
+            _logger = logger;
         }
 
         public async Task<CalibreResult<BookInfo>> GetBookInfo(string filePath)
@@ -24,6 +27,7 @@ namespace KindlerBot.Conversion
             var error = GetCalibreError(output);
             if (exitCode != 0 || error != null)
             {
+                _logger.LogWarning("GetBookInfo failed. Exit code: {exit code}, output: {output}", exitCode, output);
                 return CalibreResult<BookInfo>.Failed(error ?? "Calibre exited with error code");
             }
 
@@ -39,6 +43,7 @@ namespace KindlerBot.Conversion
             var error = GetCalibreError(output);
             if (exitCode != 0 || error != null)
             {
+                _logger.LogWarning("ExportCover failed. Exit code: {exit code}, output: {output}", exitCode, output);
                 return CalibreResult.Failed(error ?? "Calibre exited with error code");
             }
 
@@ -56,6 +61,7 @@ namespace KindlerBot.Conversion
             var error = GetCalibreError(output);
             if (exitCode != 0 || error != null)
             {
+                _logger.LogWarning("ConvertBook failed. Exit code: {exit code}, output: {output}", exitCode, output);
                 return CalibreResult.Failed(error ?? "Calibre exited with error code");
             }
 
@@ -85,6 +91,7 @@ namespace KindlerBot.Conversion
             var error = output.LastOrDefault(x => x.Contains("Error"))?.Split(':', 2)[^1];
             if (exitCode != 0 || error != null)
             {
+                _logger.LogWarning("SendBookToEmail failed. Exit code: {exit code}, output: {output}", exitCode, output);
                 return CalibreResult.Failed(error ?? "Calibre exited with error code");
             }
 
