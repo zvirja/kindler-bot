@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,7 +22,7 @@ namespace KindlerBot.Configuration
             _deploymentConfig = deploymentConfig.Value;
         }
 
-        public async ValueTask<string?> GetChatEmail(ChatId chatId)
+        public async Task<string?> GetChatEmail(ChatId chatId)
         {
             Config config = await GetConfig();
 
@@ -28,7 +30,13 @@ namespace KindlerBot.Configuration
             return email;
         }
 
-        public async ValueTask SetChatEmail(ChatId chatId, string email)
+        public async Task<ChatId[]> GetAllowedChatIds()
+        {
+            var config = await GetConfig();
+            return config.AllowedChatIds.Select(x => new ChatId(x)).ToArray();
+        }
+
+        public async Task SetChatEmail(ChatId chatId, string email)
         {
             await _storeLock.WaitAsync();
             try
@@ -52,7 +60,7 @@ namespace KindlerBot.Configuration
             var fileContents = await File.ReadAllTextAsync(configPath);
             return JsonConvert.DeserializeObject<Config>(fileContents);
         }
-        
+
 
         private async Task StoreConfig(Config config)
         {
@@ -69,6 +77,7 @@ namespace KindlerBot.Configuration
         private class Config
         {
             public Dictionary<string, string> UserEmails { get; set; } = new();
+            public string[] AllowedChatIds { get; set; } = Array.Empty<string>();
         }
     }
 }

@@ -6,6 +6,7 @@ using System;
 using KindlerBot.Commands;
 using KindlerBot.Configuration;
 using KindlerBot.Conversion;
+using KindlerBot.Security;
 using KindlerBot.Services;
 using KindlerBot.Workflow;
 using MediatR;
@@ -45,6 +46,7 @@ namespace KindlerBot
 
             services.AddMediatR(typeof(Startup));
 
+            services.AddSingleton<IChatAuthorization, ChatAuthorization>();
             services.AddSingleton<ITelegramCommands, TelegramCommands>();
             services.AddSingleton<IWorkflowManager, WorkflowManager>();
             services.AddSingleton<IConfigStore, FileSystemConfigStore>();

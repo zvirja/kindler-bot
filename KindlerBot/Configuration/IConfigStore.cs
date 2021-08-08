@@ -1,12 +1,15 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Telegram.Bot.Types;
 
 namespace KindlerBot.Configuration
 {
     internal interface IConfigStore
     {
-        public ValueTask SetChatEmail(ChatId chatId, string email);
+        public Task SetChatEmail(ChatId chatId, string email);
 
-        public ValueTask<string?> GetChatEmail(ChatId chatId);
+        public Task<string?> GetChatEmail(ChatId chatId);
+
+        public Task<ChatId[]> GetAllowedChatIds();
     }
 }

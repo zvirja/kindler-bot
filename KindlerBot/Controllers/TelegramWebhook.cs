@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using KindlerBot.Commands;
 using KindlerBot.Configuration;
+using KindlerBot.Security;
 using KindlerBot.Workflow;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -14,12 +15,14 @@ namespace KindlerBot.Controllers
     [Route("webhook")]
     public class TelegramWebhook : Controller
     {
+        private readonly IChatAuthorization _chatAuthorization;
         private readonly ILogger<TelegramWebhook> _logger;
         private readonly BotConfiguration _botConfiguration;
 
-        public TelegramWebhook(IOptions<BotConfiguration> botConfiguration, ILogger<TelegramWebhook> logger)
+        public TelegramWebhook(IOptions<BotConfiguration> botConfiguration, IChatAuthorization chatAuthorization, ILogger<TelegramWebhook> logger)
         {
             _botConfiguration = botConfiguration.Value;
+            _chatAuthorization = chatAuthorization;
             _logger = logger;
         }
 
@@ -30,6 +33,11 @@ namespace KindlerBot.Controllers
             if (!string.Equals(_botConfiguration.WebhookUrlSecret, signature, StringComparison.Ordinal))
             {
                 return NotFound();
+            }
+
+            if (!await _chatAuthorization.IsAuthorized(update))
+            {
+                return Ok();
             }
 
             try
