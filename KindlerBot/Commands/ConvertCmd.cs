@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Security.Policy;
 using System.Threading;
 using System.Threading.Tasks;
 using KindlerBot.Configuration;
@@ -16,6 +18,22 @@ namespace KindlerBot.Commands
 
     internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
     {
+        private static readonly HashSet<string> KindleSupportedFormats = new(
+            new[]
+            {
+                ".MOBI", ".AZW",
+                ".DOC", ".DOCX",
+                ".HTML", ".HTM",
+                ".RTF",
+                ".TXT",
+                ".JPEG", ".JPG",
+                ".GIF",
+                ".PNG",
+                ".BMP",
+                ".PDF"
+            },
+            StringComparer.OrdinalIgnoreCase);
+
         private readonly ITelegramBotClient _botClient;
         private readonly IConfigStore _configStore;
         private readonly ICalibreCli _calibreCli;
@@ -89,10 +107,10 @@ namespace KindlerBot.Commands
                 }
 
                 string convertedFilePath;
-                if (doc.FileName.EndsWith(".pdf"))
+                if (KindleSupportedFormats.Contains(Path.GetExtension(doc.FileName)))
                 {
                     convertedFilePath = sourceFilePath;
-                    await _botClient.SendTextMessageAsync(chat, $"ℹ Conversion skipped for PDF");
+                    await _botClient.SendTextMessageAsync(chat, $"ℹ Conversion skipped for {Path.GetExtension(doc.FileName)}");
                 }
                 else
                 {
