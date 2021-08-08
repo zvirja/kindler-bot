@@ -54,6 +54,7 @@ namespace KindlerBot.Conversion
             var output = await process.StandardOutput.ReadToEndAsync();
             var outputLines = output.Split('\n').Select(x => x.Trim()).ToArray();
 
+            _logger.LogDebug("CalibreCli exited with {exit code}. Output: {output}", process.ExitCode, outputLines);
             return (process.ExitCode, outputLines);
         }
     }
