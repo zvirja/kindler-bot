@@ -49,9 +49,10 @@ namespace KindlerBot.Conversion
             _logger.LogDebug("Running CalibreCli: {path} {args}", exePath, argsLine);
             var process = Process.Start(psi) ?? throw new InvalidOperationException($"Unable to start Calibre CLI process. Tool: {appName}");
 
+            var output = await process.StandardOutput.ReadToEndAsync();
+
             await process.WaitForExitAsync();
 
-            var output = await process.StandardOutput.ReadToEndAsync();
             var outputLines = output.Split('\n').Select(x => x.Trim()).ToArray();
 
             _logger.LogDebug("CalibreCli exited with {exit code}. Output: {output}", process.ExitCode, output);
