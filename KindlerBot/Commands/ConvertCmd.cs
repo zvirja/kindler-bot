@@ -96,7 +96,7 @@ namespace KindlerBot.Commands
                     return;
                 }
 
-                await _botClient.SendTextMessageAsync(chat, $"📧 Converted. Sending to your Kindle device...");
+                await _botClient.SendTextMessageAsync(chat, $"💌 Converted. Sending to your Kindle device...");
                 var sendResult = await _calibreCli.SendBookToEmail(convertedFilePath, email);
                 if (!sendResult.IsSuccessful)
                 {
