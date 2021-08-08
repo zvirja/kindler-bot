@@ -52,6 +52,11 @@ namespace KindlerBot.Conversion
                 return CalibreResult.Failed("No cover found");
             }
 
+            if (output.LastOrDefault()?.StartsWith("Cover saved to") != true)
+            {
+                return CalibreResult.Failed("Cover was not saved");
+            }
+
             return CalibreResult.Successful;
         }
 
