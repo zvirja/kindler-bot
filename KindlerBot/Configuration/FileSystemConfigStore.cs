@@ -64,7 +64,7 @@ namespace KindlerBot.Configuration
 
         private async Task StoreConfig(Config config)
         {
-            await File.WriteAllTextAsync(GetConfigPath(), JsonConvert.SerializeObject(config));
+            await File.WriteAllTextAsync(GetConfigPath(), JsonConvert.SerializeObject(config, Formatting.Indented));
         }
 
         private string GetConfigPath()
