@@ -1,0 +1,24 @@
+image: Visual Studio 2019
+
+environment:
+  DOCKER_REGISTRY_USERNAME:
+    secure: dmyPzjP6KShV/FiJ215A4Q==
+  DOCKER_REGISTRY_PASSWORD:
+    secure: UYs7PFiQeHyLhEFJeiMpH3Osuu83IlFZBZCpgF2zAmNNiANRYh5JWkq0rG2gxyhE
+
+pull_requests:
+  do_not_increment_build_number: true
+  
+init:
+  - ps: $env:DOCKER_REGISTRY_PASSWORD | docker login --username="$env:DOCKER_REGISTRY_USERNAME" --password-stdin vps.zvirja.linkpc.net
+
+build_script:
+- ps: |
+    (& cmd /c); [console]::OutputEncoding = New-Object System.Text.UTF8Encoding;
+    & .\build.ps1 --target AppVeyor_Pipeline --build-version git  --build-number $($Env:APPVEYOR_BUILD_NUMBER) --no-logo
+
+test: off
+
+artifacts: off
+
+deploy: off

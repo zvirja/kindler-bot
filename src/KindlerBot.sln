@@ -7,8 +7,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KindlerBot", "KindlerBot\Ki
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3E950A5F-49F2-48D9-9CB5-969BCA51EF4E}"
 	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
+		..\.editorconfig = ..\.editorconfig
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "..\build\_build.csproj", "{85C92930-3845-4197-B2DE-E17551A58410}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -16,6 +18,8 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{85C92930-3845-4197-B2DE-E17551A58410}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85C92930-3845-4197-B2DE-E17551A58410}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FCA9C4D8-AAFA-4AD1-9FF6-0776A6D5F622}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FCA9C4D8-AAFA-4AD1-9FF6-0776A6D5F622}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FCA9C4D8-AAFA-4AD1-9FF6-0776A6D5F622}.Release|Any CPU.ActiveCfg = Release|Any CPU
