@@ -76,6 +76,7 @@ class Build : NukeBuild
                 .AddProperty("AssemblyVersion", CurrentBuildVersion.AssemblyVersion)
                 .AddProperty("FileVersion", CurrentBuildVersion.FileVersion)
                 .AddProperty("InformationalVersion", CurrentBuildVersion.InfoVersion)
+                .AddProperty("GitSha", CurrentBuildVersion.GitSha)
                 .SetVerbosity(DotNetVerbosity.Minimal)
             );
         });
@@ -92,6 +93,7 @@ class Build : NukeBuild
                 .AddProperty("AssemblyVersion", CurrentBuildVersion.AssemblyVersion)
                 .AddProperty("FileVersion", CurrentBuildVersion.FileVersion)
                 .AddProperty("InformationalVersion", CurrentBuildVersion.InfoVersion)
+                .AddProperty("GitSha", CurrentBuildVersion.GitSha)
                 .SetVerbosity(DotNetVerbosity.Minimal)
             );
         });

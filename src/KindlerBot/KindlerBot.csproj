@@ -4,7 +4,6 @@
     <TargetFramework>net5.0</TargetFramework>
     <UserSecretsId>d757df63-18a6-44ae-b41b-abd7718812a4</UserSecretsId>
     <Nullable>enable</Nullable>
-    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,5 +13,8 @@
     <PackageReference Include="MediatR" Version="9.0.0" />
     <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="9.0.0" />
   </ItemGroup>
-
+  
+  <ItemGroup>
+    <AssemblyMetadata Include="GitSha" Value="$(GitSha)" />
+  </ItemGroup>
 </Project>

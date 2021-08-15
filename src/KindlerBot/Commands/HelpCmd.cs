@@ -23,7 +23,7 @@ namespace KindlerBot.Commands
 
         public async Task<Unit> Handle(HelpCmdRequest request, CancellationToken cancellationToken)
         {
-            var msg = $"Kindler {Util.ProductVersion}\n" +
+            var msg = $"Kindler v{BotVersion.Current.AppVersion} ({BotVersion.Current.GitSha})\n" +
                       $"Send me a book doc and I'll send it to your Kindle 🚀\n" +
                       $"\n" +
                       $"Make sure to add {_smtpConfig.FromEmail} to your list of allowed senders on Amazon website.";

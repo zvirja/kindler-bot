@@ -45,7 +45,8 @@ public static class GitBasedVersion
             AssemblyVersion = assemblyVersion,
             FileVersion = fileVersion,
             InfoVersion = infoVersion,
-            NuGetVersion = nugetVersion
+            NuGetVersion = nugetVersion,
+            GitSha = sha
         };
     }
 }

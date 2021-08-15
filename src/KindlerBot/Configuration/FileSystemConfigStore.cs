@@ -36,19 +36,35 @@ namespace KindlerBot.Configuration
             return config.AllowedChatIds.Select(x => new ChatId(x)).ToArray();
         }
 
+        public async Task<ChatId?> GetAdminChatId()
+        {
+            var config = await GetConfig();
+            return config.AdminChatId;
+        }
+
+        public async Task<Version?> GetLastAppVersion()
+        {
+            var config = await GetConfig();
+            if (config.LastVersion is { } lastVersion)
+                return Version.Parse(lastVersion);
+
+            return null;
+        }
+
+        public async Task SetLastAppVersion(Version version)
+        {
+            await StoreConfig(config =>
+            {
+                config.LastVersion = version.ToString();
+            });
+        }
+
         public async Task SetChatEmail(ChatId chatId, string email)
         {
-            await _storeLock.WaitAsync();
-            try
+            await StoreConfig(config =>
             {
-                Config config = await GetConfig();
                 config.UserEmails[chatId.ToString()] = email;
-                await StoreConfig(config);
-            }
-            finally
-            {
-                _storeLock.Release();
-            }
+            });
         }
 
         private async Task<Config> GetConfig()
@@ -62,9 +78,19 @@ namespace KindlerBot.Configuration
         }
 
 
-        private async Task StoreConfig(Config config)
+        private async Task StoreConfig(Action<Config> modifyConfig)
         {
-            await File.WriteAllTextAsync(GetConfigPath(), JsonConvert.SerializeObject(config, Formatting.Indented));
+            await _storeLock.WaitAsync();
+            try
+            {
+                var config = await GetConfig();
+                modifyConfig(config);
+                await File.WriteAllTextAsync(GetConfigPath(), JsonConvert.SerializeObject(config, Formatting.Indented));
+            }
+            finally
+            {
+                _storeLock.Release();
+            }
         }
 
         private string GetConfigPath()
@@ -78,6 +104,10 @@ namespace KindlerBot.Configuration
         {
             public Dictionary<string, string> UserEmails { get; set; } = new();
             public string[] AllowedChatIds { get; set; } = Array.Empty<string>();
+
+            public string? LastVersion { get; set; }
+
+            public string? AdminChatId { get; set; }
         }
     }
 }

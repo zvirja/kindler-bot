@@ -25,7 +25,7 @@ namespace KindlerBot
 
             services.AddHostedService<WebhookConfiguration>();
             services.AddHostedService<CommandConfiguration>();
-
+            services.AddHostedService<UpdateNotifier>();
 
             services.AddOptions<BotConfiguration>()
                 .BindConfiguration(BotConfiguration.SectionName)

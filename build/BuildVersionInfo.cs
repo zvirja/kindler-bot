@@ -5,5 +5,7 @@
     public string InfoVersion { get; init; }
     public string NuGetVersion { get; init; }
 
+    public string GitSha { get; init; }
+
     public override string ToString() => $"Assembly: {AssemblyVersion}, Info: {InfoVersion}, File: {FileVersion} NuGet: {NuGetVersion}";
 }
