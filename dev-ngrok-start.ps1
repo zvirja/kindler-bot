@@ -9,7 +9,7 @@ try
     $ngrokApiResponse = Invoke-WebRequest -Uri "http://127.0.0.1:4040/api/tunnels"
     $url = (ConvertFrom-Json $ngrokApiResponse.Content).tunnels[0].public_url
 
-    . dotnet user-secrets set "Deployment:PublicUrl" $url --project .\KindlerBot\KindlerBot.csproj
+    . dotnet user-secrets set "Deployment:PublicUrl" $url --project .\src\KindlerBot\KindlerBot.csproj
     Write-Host "Configured public URL to $url" -ForegroundColor DarkGreen
 
     while($true)
