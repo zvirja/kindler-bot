@@ -1,4 +1,4 @@
-image: Visual Studio 2019
+image: Visual Studio 2022
 
 environment:
   DOCKER_REGISTRY_USERNAME:
@@ -8,7 +8,7 @@ environment:
 
 pull_requests:
   do_not_increment_build_number: true
-  
+
 init:
   - ps: $env:DOCKER_REGISTRY_PASSWORD | docker login --username="$env:DOCKER_REGISTRY_USERNAME" --password-stdin vps.zvirja.linkpc.net
 

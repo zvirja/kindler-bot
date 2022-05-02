@@ -10,9 +10,9 @@ using Nuke.Common.Tools.Docker;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Utilities.Collections;
 using static Nuke.Common.IO.FileSystemTasks;
-using static Nuke.Common.Logger;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.Docker.DockerTasks;
+using static Serilog.Log;
 
 [CheckBuildProjectConfigurations]
 [ShutdownDotNetAfterServerBuild]
@@ -43,7 +43,7 @@ class Build : NukeBuild
     Target CalculateVersion => _ => _
         .Executes(() =>
         {
-            Info($"Build version: {BuildVersionParam}");
+            Information($"Build version: {BuildVersionParam}");
 
             CurrentBuildVersion = BuildVersionParam switch
             {
@@ -52,7 +52,7 @@ class Build : NukeBuild
                 var ver => new BuildVersionInfo {AssemblyVersion = ver, FileVersion = ver, InfoVersion = ver, NuGetVersion = ver}
             };
 
-            Info($"Calculated version: {CurrentBuildVersion}");
+            Information($"Calculated version: {CurrentBuildVersion}");
         });
 
     Target Clean => _ => _
@@ -133,7 +133,7 @@ class Build : NukeBuild
         {
             var env = AppVeyorEnv;
             var trigger = ResolveAppVeyorTrigger();
-            Info($"Is tag: {env.RepositoryTag}, tag name: '{env.RepositoryTagName}', PR number: {env.PullRequestNumber?.ToString() ?? "<null>"}, branch name: '{env.RepositoryBranch}', trigger: {trigger}");
+            Information($"Is tag: {env.RepositoryTag}, tag name: '{env.RepositoryTagName}', PR number: {env.PullRequestNumber?.ToString() ?? "<null>"}, branch name: '{env.RepositoryBranch}', trigger: {trigger}");
         });
 
     Target AppVeyor_Pipeline => _ => _
@@ -144,7 +144,7 @@ class Build : NukeBuild
             if (trigger != AppVeyorTrigger.PR)
             {
                 AppVeyorEnv.UpdateBuildVersion(CurrentBuildVersion.FileVersion);
-                Info($"Updated build version to: '{CurrentBuildVersion.FileVersion}'");
+                Information($"Updated build version to: '{CurrentBuildVersion.FileVersion}'");
             }
         });
 
