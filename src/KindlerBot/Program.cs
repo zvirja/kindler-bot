@@ -54,6 +54,6 @@ if (!string.IsNullOrEmpty(deployUrlSubPath))
     app.UsePathBase(deployUrlSubPath);
 }
 
-app.MapControllers();
+app.MapControllerRoute("webhook", "/webhook/{signature}", defaults: new { controller = "TelegramWebhook", action = "HandleUpdate" });
 
 await app.RunAsync();

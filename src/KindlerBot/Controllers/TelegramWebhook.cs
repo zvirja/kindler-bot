@@ -12,7 +12,6 @@ using Telegram.Bot.Types;
 
 namespace KindlerBot.Controllers;
 
-[Route("webhook")]
 public class TelegramWebhook : Controller
 {
     private readonly IChatAuthorization _chatAuthorization;
@@ -26,7 +25,7 @@ public class TelegramWebhook : Controller
         _logger = logger;
     }
 
-    [HttpPost("{signature}")]
+    [HttpPost]
     public async Task<IActionResult> HandleUpdate(string signature, [FromBody] Update update,
         [FromServices] ITelegramCommands updateDispatcher, [FromServices] IInteractionManager interactionManager, [FromServices] ITelegramBotClient botClient)
     {
