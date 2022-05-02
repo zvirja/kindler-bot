@@ -9,15 +9,16 @@ using KindlerBot.Services;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Serilog;
 using Telegram.Bot;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Logging.AddSimpleConsole(c =>
+builder.Host.UseSerilog((ctx, lc) =>
 {
-    c.SingleLine = true;
+    lc.ReadFrom.Configuration(ctx.Configuration);
+    lc.WriteTo.Console();
 });
 
 builder.Services.AddHostedService<WebhookConfiguration>();
