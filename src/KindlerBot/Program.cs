@@ -26,13 +26,7 @@ builder.Services.AddHostedService<CommandConfiguration>();
 builder.Services.AddHostedService<UpdateNotifier>();
 
 builder.Services.AddOptions<BotConfiguration>().BindConfiguration(BotConfiguration.SectionName)
-    .Configure(config =>
-    {
-        if (config.WebhookUrlSecret == null)
-        {
-            config.WebhookUrlSecret = Guid.NewGuid().ToString("N");
-        }
-    });
+    .Configure(config => { config.WebhookUrlSecret ??= Guid.NewGuid().ToString("N"); });
 builder.Services.AddOptions<DeploymentConfiguration>().BindConfiguration(DeploymentConfiguration.SectionName);
 builder.Services.AddOptions<SmtpConfiguration>().BindConfiguration(SmtpConfiguration.SectionName);
 builder.Services.AddOptions<CalibreCliConfiguration>().BindConfiguration(CalibreCliConfiguration.SectionName);
