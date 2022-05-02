@@ -16,7 +16,9 @@ namespace KindlerBot
             var assembly = Assembly.GetExecutingAssembly();
 
             AppVersion = Version.Parse(assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()!.Version);
-            GitSha = assembly.GetCustomAttributes<AssemblyMetadataAttribute>().FirstOrDefault(a => a.Key == "GitSha")?.Value![..7] ?? "<unknown>";
+
+            var gitShaAttr = assembly.GetCustomAttributes<AssemblyMetadataAttribute>().FirstOrDefault(a => a.Key == "GitSha")?.Value;
+            GitSha = string.IsNullOrEmpty(gitShaAttr) ? "<unknown>" : gitShaAttr[..7];
         }
     }
 }
