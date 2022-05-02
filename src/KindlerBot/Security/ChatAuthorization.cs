@@ -4,38 +4,37 @@ using System.Threading.Tasks;
 using KindlerBot.Configuration;
 using Telegram.Bot.Types;
 
-namespace KindlerBot.Security
+namespace KindlerBot.Security;
+
+internal class ChatAuthorization : IChatAuthorization
 {
-    internal class ChatAuthorization : IChatAuthorization
+    private readonly IConfigStore _configStore;
+
+    private HashSet<ChatId>? AuthorizedChatIds { get; set; }
+
+    public ChatAuthorization(IConfigStore configStore)
     {
-        private readonly IConfigStore _configStore;
+        _configStore = configStore;
+    }
 
-        private HashSet<ChatId>? AuthorizedChatIds { get; set; }
-
-        public ChatAuthorization(IConfigStore configStore)
+    public async ValueTask<bool> IsAuthorized(Update update)
+    {
+        if (AuthorizedChatIds == null)
         {
-            _configStore = configStore;
+            AuthorizedChatIds = (await _configStore.GetAllowedChatIds()).ToHashSet();
         }
 
-        public async ValueTask<bool> IsAuthorized(Update update)
+        if (AuthorizedChatIds.Count == 0)
         {
-            if (AuthorizedChatIds == null)
-            {
-                AuthorizedChatIds = (await _configStore.GetAllowedChatIds()).ToHashSet();
-            }
-
-            if (AuthorizedChatIds.Count == 0)
-            {
-                return true;
-            }
-
-            var chatId = update.TryGetChatId();
-            if (chatId == null)
-            {
-                return false;
-            }
-
-            return AuthorizedChatIds.Contains(chatId);
+            return true;
         }
+
+        var chatId = update.TryGetChatId();
+        if (chatId == null)
+        {
+            return false;
+        }
+
+        return AuthorizedChatIds.Contains(chatId);
     }
 }

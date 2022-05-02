@@ -2,14 +2,13 @@
 
 using System;
 
-namespace KindlerBot.Configuration
+namespace KindlerBot.Configuration;
+
+public class DeploymentConfiguration
 {
-    public class DeploymentConfiguration
-    {
-        public const string SectionName = "Deployment";
+    public const string SectionName = "Deployment";
 
-        public Uri PublicUrl { get; set; }
+    public Uri PublicUrl { get; set; }
 
-        public string ConfigStore { get; set; }
-    }
+    public string ConfigStore { get; set; }
 }

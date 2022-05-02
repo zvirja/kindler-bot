@@ -1,13 +1,12 @@
 ﻿#nullable disable warnings
 
-namespace KindlerBot.Configuration
+namespace KindlerBot.Configuration;
+
+public class BotConfiguration
 {
-    public class BotConfiguration
-    {
-        public const string SectionName = "Bot";
+    public const string SectionName = "Bot";
 
-        public string BotToken { get; set; }
+    public string BotToken { get; set; }
 
-        public string WebhookUrlSecret { get; set; }
-    }
+    public string WebhookUrlSecret { get; set; }
 }

@@ -1,11 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Telegram.Bot.Types;
 
-namespace KindlerBot.Interactivity
+namespace KindlerBot.Interactivity;
+
+public interface IInteractionManager
 {
-    public interface IInteractionManager
-    {
-        bool ResumeInteraction(Update update);
-        Task<Update> AwaitNextUpdate(ChatId chatId);
-    }
+    bool ResumeInteraction(Update update);
+    Task<Update> AwaitNextUpdate(ChatId chatId);
 }

@@ -9,58 +9,57 @@ using KindlerBot.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace KindlerBot.Conversion
+namespace KindlerBot.Conversion;
+
+internal class CalibreCliExec : ICalibreCliExec
 {
-    internal class CalibreCliExec : ICalibreCliExec
+    private readonly CalibreCliConfiguration _cliConfig;
+    private readonly ILogger<CalibreCliExec> _logger;
+
+    public CalibreCliExec(IOptions<CalibreCliConfiguration> cliConfig, ILogger<CalibreCliExec> logger)
     {
-        private readonly CalibreCliConfiguration _cliConfig;
-        private readonly ILogger<CalibreCliExec> _logger;
+        _logger = logger;
+        _cliConfig = cliConfig.Value;
+    }
 
-        public CalibreCliExec(IOptions<CalibreCliConfiguration> cliConfig, ILogger<CalibreCliExec> logger)
+    public async Task<(int exitCode, string[] output)> RunCalibre(CalibreCliApp app, string[] args)
+    {
+        var appName = app switch
         {
-            _logger = logger;
-            _cliConfig = cliConfig.Value;
+            CalibreCliApp.Meta => "ebook-meta",
+            CalibreCliApp.Convert => "ebook-convert",
+            CalibreCliApp.Smtp => "calibre-smtp",
+            _ => throw new ArgumentOutOfRangeException(nameof(app), app, null)
+        };
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            appName += ".exe";
         }
 
-        public async Task<(int exitCode, string[] output)> RunCalibre(CalibreCliApp app, string[] args)
-        {
-            var appName = app switch
-            {
-                CalibreCliApp.Meta => "ebook-meta",
-                CalibreCliApp.Convert => "ebook-convert",
-                CalibreCliApp.Smtp => "calibre-smtp",
-                _ => throw new ArgumentOutOfRangeException(nameof(app), app, null)
-            };
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                appName += ".exe";
-            }
+        var exePath = Path.Join(_cliConfig.HomeDir, appName);
+        var argsLine = string.Join(" ", args);
+        var psi = new ProcessStartInfo(exePath, argsLine);
 
-            var exePath = Path.Join(_cliConfig.HomeDir, appName);
-            var argsLine = string.Join(" ", args);
-            var psi = new ProcessStartInfo(exePath, argsLine);
+        psi.WorkingDirectory = Path.GetTempPath();
 
-            psi.WorkingDirectory = Path.GetTempPath();
+        psi.UseShellExecute = false;
+        psi.CreateNoWindow = true;
+        psi.RedirectStandardOutput = true;
+        psi.RedirectStandardError = true;
 
-            psi.UseShellExecute = false;
-            psi.CreateNoWindow = true;
-            psi.RedirectStandardOutput = true;
-            psi.RedirectStandardError = true;
+        _logger.LogDebug("Running CalibreCli: {path} {args}", exePath, argsLine);
+        var process = Process.Start(psi) ?? throw new InvalidOperationException($"Unable to start Calibre CLI process. Tool: {appName}");
 
-            _logger.LogDebug("Running CalibreCli: {path} {args}", exePath, argsLine);
-            var process = Process.Start(psi) ?? throw new InvalidOperationException($"Unable to start Calibre CLI process. Tool: {appName}");
+        var outputLines = new List<string>();
+        process.OutputDataReceived += (_, eventArgs) => outputLines.Add(eventArgs.Data ?? string.Empty);
+        process.ErrorDataReceived += (_, eventArgs) => outputLines.Add(eventArgs.Data ?? string.Empty);
 
-            var outputLines = new List<string>();
-            process.OutputDataReceived += (_, eventArgs) => outputLines.Add(eventArgs.Data ?? string.Empty);
-            process.ErrorDataReceived += (_, eventArgs) => outputLines.Add(eventArgs.Data ?? string.Empty);
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
 
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
+        await process.WaitForExitAsync();
 
-            await process.WaitForExitAsync();
-
-            _logger.LogDebug("CalibreCli exited with {exit code}. Output: {output}", process.ExitCode, outputLines);
-            return (process.ExitCode, outputLines.ToArray());
-        }
+        _logger.LogDebug("CalibreCli exited with {exit code}. Output: {output}", process.ExitCode, outputLines);
+        return (process.ExitCode, outputLines.ToArray());
     }
 }

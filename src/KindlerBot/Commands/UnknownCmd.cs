@@ -4,27 +4,26 @@ using MediatR;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace KindlerBot.Commands
+namespace KindlerBot.Commands;
+
+internal record UnknownCmdRequest(Update Update) : IRequest;
+
+internal class UnknownCmdHandler : IRequestHandler<UnknownCmdRequest>
 {
-    internal record UnknownCmdRequest(Update Update) : IRequest;
+    private readonly ITelegramBotClient _botClient;
 
-    internal class UnknownCmdHandler : IRequestHandler<UnknownCmdRequest>
+    public UnknownCmdHandler(ITelegramBotClient botClient)
     {
-        private readonly ITelegramBotClient _botClient;
+        _botClient = botClient;
+    }
 
-        public UnknownCmdHandler(ITelegramBotClient botClient)
+    public async Task<Unit> Handle(UnknownCmdRequest request, CancellationToken cancellationToken)
+    {
+        if (request.Update.TryGetChatId() is { } chatId)
         {
-            _botClient = botClient;
+            await _botClient.SendTextMessageAsync(chatId, @"¯\_(ツ)_/¯ Unknown command", cancellationToken: cancellationToken);
         }
 
-        public async Task<Unit> Handle(UnknownCmdRequest request, CancellationToken cancellationToken)
-        {
-            if (request.Update.TryGetChatId() is { } chatId)
-            {
-                await _botClient.SendTextMessageAsync(chatId, @"¯\_(ツ)_/¯ Unknown command", cancellationToken: cancellationToken);
-            }
-
-            return Unit.Value;
-        }
+        return Unit.Value;
     }
 }

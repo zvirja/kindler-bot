@@ -6,34 +6,33 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 
-namespace KindlerBot.Commands
+namespace KindlerBot.Commands;
+
+internal record UpdateNotification(BotVersion NewVersion) : INotification;
+
+internal class UpdateNotificationHandler : INotificationHandler<UpdateNotification>
 {
-    internal record UpdateNotification(BotVersion NewVersion) : INotification;
+    private readonly ITelegramBotClient _botClient;
+    private readonly IConfigStore _configStore;
+    private readonly ILogger<UpdateNotificationHandler> _logger;
 
-    internal class UpdateNotificationHandler : INotificationHandler<UpdateNotification>
+    public UpdateNotificationHandler(ITelegramBotClient botClient, IConfigStore configStore, ILogger<UpdateNotificationHandler> logger)
     {
-        private readonly ITelegramBotClient _botClient;
-        private readonly IConfigStore _configStore;
-        private readonly ILogger<UpdateNotificationHandler> _logger;
+        _botClient = botClient;
+        _configStore = configStore;
+        _logger = logger;
+    }
 
-        public UpdateNotificationHandler(ITelegramBotClient botClient, IConfigStore configStore, ILogger<UpdateNotificationHandler> logger)
+    public async Task Handle(UpdateNotification notification, CancellationToken cancellationToken)
+    {
+        var adminChatId = await _configStore.GetAdminChatId();
+        if (adminChatId == null)
         {
-            _botClient = botClient;
-            _configStore = configStore;
-            _logger = logger;
+            _logger.LogWarning("Cannot send notification update - AdminChatId is not configured");
+            return;
         }
 
-        public async Task Handle(UpdateNotification notification, CancellationToken cancellationToken)
-        {
-            var adminChatId = await _configStore.GetAdminChatId();
-            if (adminChatId == null)
-            {
-                _logger.LogWarning("Cannot send notification update - AdminChatId is not configured");
-                return;
-            }
-
-            var msg = $"🎈 Updated to v{notification.NewVersion.AppVersion} ({notification.NewVersion.GitSha})";
-            await _botClient.SendTextMessageAsync(adminChatId, msg, cancellationToken: cancellationToken);
-        }
+        var msg = $"🎈 Updated to v{notification.NewVersion.AppVersion} ({notification.NewVersion.GitSha})";
+        await _botClient.SendTextMessageAsync(adminChatId, msg, cancellationToken: cancellationToken);
     }
 }

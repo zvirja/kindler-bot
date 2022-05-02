@@ -1,11 +1,10 @@
 ﻿#nullable disable warnings
 
-namespace KindlerBot.Configuration
-{
-    public class CalibreCliConfiguration
-    {
-        public const string SectionName = "CalibreCli";
+namespace KindlerBot.Configuration;
 
-        public string HomeDir { get; set; }
-    }
+public class CalibreCliConfiguration
+{
+    public const string SectionName = "CalibreCli";
+
+    public string HomeDir { get; set; }
 }

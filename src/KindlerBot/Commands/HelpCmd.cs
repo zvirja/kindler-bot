@@ -6,31 +6,30 @@ using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace KindlerBot.Commands
+namespace KindlerBot.Commands;
+
+internal record HelpCmdRequest(Chat Chat) : IRequest;
+
+internal class HelpCmdHandler : IRequestHandler<HelpCmdRequest>
 {
-    internal record HelpCmdRequest(Chat Chat) : IRequest;
+    private readonly ITelegramBotClient _botClient;
+    private readonly SmtpConfiguration _smtpConfig;
 
-    internal class HelpCmdHandler : IRequestHandler<HelpCmdRequest>
+    public HelpCmdHandler(ITelegramBotClient botClient, IOptions<SmtpConfiguration> smtpConfig)
     {
-        private readonly ITelegramBotClient _botClient;
-        private readonly SmtpConfiguration _smtpConfig;
+        _botClient = botClient;
+        _smtpConfig = smtpConfig.Value;
+    }
 
-        public HelpCmdHandler(ITelegramBotClient botClient, IOptions<SmtpConfiguration> smtpConfig)
-        {
-            _botClient = botClient;
-            _smtpConfig = smtpConfig.Value;
-        }
+    public async Task<Unit> Handle(HelpCmdRequest request, CancellationToken cancellationToken)
+    {
+        var msg = $"Kindler v{BotVersion.Current.AppVersion} ({BotVersion.Current.GitSha})\n" +
+                  $"Send me a book doc and I'll send it to your Kindle 🚀\n" +
+                  $"\n" +
+                  $"Make sure to add {_smtpConfig.FromEmail} to your list of allowed senders on Amazon website.";
 
-        public async Task<Unit> Handle(HelpCmdRequest request, CancellationToken cancellationToken)
-        {
-            var msg = $"Kindler v{BotVersion.Current.AppVersion} ({BotVersion.Current.GitSha})\n" +
-                      $"Send me a book doc and I'll send it to your Kindle 🚀\n" +
-                      $"\n" +
-                      $"Make sure to add {_smtpConfig.FromEmail} to your list of allowed senders on Amazon website.";
+        await _botClient.SendTextMessageAsync(request.Chat.Id, msg, cancellationToken: cancellationToken);
 
-            await _botClient.SendTextMessageAsync(request.Chat.Id, msg, cancellationToken: cancellationToken);
-
-            return Unit.Value;
-        }
+        return Unit.Value;
     }
 }

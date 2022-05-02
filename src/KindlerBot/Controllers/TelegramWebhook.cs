@@ -10,57 +10,56 @@ using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace KindlerBot.Controllers
-{
-    [Route("webhook")]
-    public class TelegramWebhook : Controller
-    {
-        private readonly IChatAuthorization _chatAuthorization;
-        private readonly ILogger<TelegramWebhook> _logger;
-        private readonly BotConfiguration _botConfig;
+namespace KindlerBot.Controllers;
 
-        public TelegramWebhook(IOptions<BotConfiguration> botConfiguration, IChatAuthorization chatAuthorization, ILogger<TelegramWebhook> logger)
+[Route("webhook")]
+public class TelegramWebhook : Controller
+{
+    private readonly IChatAuthorization _chatAuthorization;
+    private readonly ILogger<TelegramWebhook> _logger;
+    private readonly BotConfiguration _botConfig;
+
+    public TelegramWebhook(IOptions<BotConfiguration> botConfiguration, IChatAuthorization chatAuthorization, ILogger<TelegramWebhook> logger)
+    {
+        _botConfig = botConfiguration.Value;
+        _chatAuthorization = chatAuthorization;
+        _logger = logger;
+    }
+
+    [HttpPost("{signature}")]
+    public async Task<IActionResult> HandleUpdate(string signature, [FromBody] Update update,
+        [FromServices] ITelegramCommands updateDispatcher, [FromServices] IInteractionManager interactionManager, [FromServices] ITelegramBotClient botClient)
+    {
+        if (!string.Equals(_botConfig.WebhookUrlSecret, signature, StringComparison.Ordinal))
         {
-            _botConfig = botConfiguration.Value;
-            _chatAuthorization = chatAuthorization;
-            _logger = logger;
+            _logger.LogWarning("Rejected webhook request with wrong signature. Actual: {actual}, Expected: {expected}", signature, _botConfig.WebhookUrlSecret);
+            return NotFound();
         }
 
-        [HttpPost("{signature}")]
-        public async Task<IActionResult> HandleUpdate(string signature, [FromBody] Update update,
-            [FromServices] ITelegramCommands updateDispatcher, [FromServices] IInteractionManager interactionManager, [FromServices] ITelegramBotClient botClient)
+        if (!await _chatAuthorization.IsAuthorized(update))
         {
-            if (!string.Equals(_botConfig.WebhookUrlSecret, signature, StringComparison.Ordinal))
-            {
-                _logger.LogWarning("Rejected webhook request with wrong signature. Actual: {actual}, Expected: {expected}", signature, _botConfig.WebhookUrlSecret);
-                return NotFound();
-            }
+            _logger.LogWarning("Denied authorization for chat {chat id}", update.TryGetChatId());
+            return Ok();
+        }
 
-            if (!await _chatAuthorization.IsAuthorized(update))
+        try
+        {
+            if (interactionManager.ResumeInteraction(update))
             {
-                _logger.LogWarning("Denied authorization for chat {chat id}", update.TryGetChatId());
                 return Ok();
             }
 
-            try
-            {
-                if (interactionManager.ResumeInteraction(update))
-                {
-                    return Ok();
-                }
-
-                await updateDispatcher.DispatchUpdate(update, ct: default);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to handle Telegram Update");
-                if (update.TryGetChatId() is { } chatId)
-                {
-                    await botClient.SendTextMessageAsync(chatId, $"❌ Failed to handle update: {ex.Message}");
-                }
-            }
-
-            return Ok();
+            await updateDispatcher.DispatchUpdate(update, ct: default);
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to handle Telegram Update");
+            if (update.TryGetChatId() is { } chatId)
+            {
+                await botClient.SendTextMessageAsync(chatId, $"❌ Failed to handle update: {ex.Message}");
+            }
+        }
+
+        return Ok();
     }
 }
