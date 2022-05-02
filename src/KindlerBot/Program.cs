@@ -60,8 +60,6 @@ if (!string.IsNullOrEmpty(deployUrlSubPath))
     app.UsePathBase(deployUrlSubPath);
 }
 
-app.UseRouting();
-
 app.MapControllers();
 
 await app.RunAsync();
