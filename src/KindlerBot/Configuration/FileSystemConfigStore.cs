@@ -74,7 +74,7 @@ namespace KindlerBot.Configuration
                 return new();
 
             var fileContents = await File.ReadAllTextAsync(configPath);
-            return JsonConvert.DeserializeObject<Config>(fileContents);
+            return JsonConvert.DeserializeObject<Config>(fileContents)!;
         }
 
 

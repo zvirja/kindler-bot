@@ -1,7 +1,4 @@
-FROM mcr.microsoft.com/dotnet/aspnet:5.0
-
-EXPOSE 80
-EXPOSE 443
+FROM mcr.microsoft.com/dotnet/aspnet:6.0
 
 RUN apt-get update && \
     apt-get install -y xdg-utils && \
