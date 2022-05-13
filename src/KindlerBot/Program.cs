@@ -8,7 +8,9 @@ using KindlerBot.Security;
 using KindlerBot.Services;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Serilog;
 using Telegram.Bot;
@@ -30,7 +32,7 @@ builder.Services.AddOptions<BotConfiguration>().BindConfiguration(BotConfigurati
 builder.Services.AddOptions<DeploymentConfiguration>().BindConfiguration(DeploymentConfiguration.SectionName);
 builder.Services.AddOptions<SmtpConfiguration>().BindConfiguration(SmtpConfiguration.SectionName);
 builder.Services.AddOptions<CalibreCliConfiguration>().BindConfiguration(CalibreCliConfiguration.SectionName);
-builder.Services.AddOptions<ConversionConfiguration>().BindConfiguration(ConversionConfiguration.SectionName);
+builder.Services.AddOptions<DebugConfiguration>().BindConfiguration(DebugConfiguration.SectionName);
 
 builder.Services.AddHttpClient<ITelegramBotClient, TelegramBotClient>((httpClient, sp) =>
     new TelegramBotClient(sp.GetRequiredService<IOptions<BotConfiguration>>().Value.BotToken, httpClient));
@@ -46,12 +48,20 @@ builder.Services.AddSingleton<ICalibreCliExec, CalibreCliExec>();
 
 builder.Services.AddControllers().AddNewtonsoftJson();
 
+builder.Services.AddHttpLogging(c => c.LoggingFields = HttpLoggingFields.All);
+
 var app = builder.Build();
 
 var deployUrlSubPath = app.Services.GetRequiredService<IOptions<DeploymentConfiguration>>().Value.PublicUrl.LocalPath;
 if (!string.IsNullOrEmpty(deployUrlSubPath))
 {
     app.UsePathBase(deployUrlSubPath);
+}
+
+if (app.Services.GetRequiredService<IOptions<DebugConfiguration>>().Value.LogHttpRequests)
+{
+    app.UseHttpLogging();
+    app.Logger.LogInformation("Enabled HTTP requests logging");
 }
 
 app.MapControllerRoute("webhook", "/webhook/{signature}", defaults: new { controller = "TelegramWebhook", action = "HandleUpdate" });

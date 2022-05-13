@@ -37,19 +37,19 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
     private readonly ITelegramBotClient _botClient;
     private readonly IConfigStore _configStore;
     private readonly ICalibreCli _calibreCli;
-    private readonly ConversionConfiguration _conversionConfig;
+    private readonly DebugConfiguration _debugConfiguration;
     private readonly ILogger<ConvertCmdHandler> _logger;
 
     public ConvertCmdHandler(ITelegramBotClient botClient,
         IConfigStore configStore,
         ICalibreCli calibreCli,
-        IOptions<ConversionConfiguration> conversionConfig,
+        IOptions<DebugConfiguration> conversionConfig,
         ILogger<ConvertCmdHandler> logger)
     {
         _botClient = botClient;
         _configStore = configStore;
         _calibreCli = calibreCli;
-        _conversionConfig = conversionConfig.Value;
+        _debugConfiguration = conversionConfig.Value;
         _logger = logger;
     }
 
@@ -73,7 +73,7 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
         try
         {
             using var tempDir = new TempDir(chat.Id);
-            if (_conversionConfig.KeepTempWorkDir)
+            if (_debugConfiguration.KeepConversionTempWorkDir)
             {
                 tempDir.SuppressCleanup();
             }
