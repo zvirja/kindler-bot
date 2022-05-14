@@ -55,8 +55,8 @@ var app = builder.Build();
 var deployUrlSubPath = app.Services.GetRequiredService<IOptions<DeploymentConfiguration>>().Value.PublicUrl.LocalPath;
 if (!string.IsNullOrEmpty(deployUrlSubPath))
 {
-    app.Logger.LogInformation("Configure requests path base: {url}", deployUrlSubPath);
     app.UsePathBase(deployUrlSubPath);
+    app.Logger.LogInformation("Configured requests path base: {url}", deployUrlSubPath);
 }
 
 if (app.Services.GetRequiredService<IOptions<DebugConfiguration>>().Value.LogHttpRequests)
