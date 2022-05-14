@@ -65,6 +65,8 @@ if (app.Services.GetRequiredService<IOptions<DebugConfiguration>>().Value.LogHtt
     app.Logger.LogInformation("Enabled HTTP requests logging");
 }
 
+app.UseRouting();
+
 app.MapControllerRoute("webhook", "/webhook/{signature}", defaults: new { controller = "TelegramWebhook", action = "HandleUpdate" });
 
 await app.RunAsync();
