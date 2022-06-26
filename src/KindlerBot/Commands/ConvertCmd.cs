@@ -18,10 +18,12 @@ internal record ConvertCmdRequest(Document Doc, Chat Chat) : IRequest;
 
 internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
 {
+    /// <summary>
+    /// Get list here: https://www.amazon.com/gp/help/customer/display.html?nodeId=G5WYD9SAF7PGXRNA
+    /// </summary>
     private static readonly HashSet<string> KindleSupportedFormats = new(
         new[]
         {
-            ".MOBI", ".AZW",
             ".DOC", ".DOCX",
             ".HTML", ".HTM",
             ".RTF",
@@ -30,7 +32,9 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
             ".GIF",
             ".PNG",
             ".BMP",
-            ".PDF"
+            ".PDF",
+            ".EPUB"
+            // ".MOBI", ".AZW", // Is deprecated
         },
         StringComparer.OrdinalIgnoreCase);
 
@@ -120,7 +124,7 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
                 var conversionResult = await _calibreCli.ConvertBook(sourceFilePath, convertedFilePath);
                 if (conversionResult.IsSuccessful)
                 {
-                    await _botClient.SendTextMessageAsync(chat, $"✔ Converted to MOBI.");
+                    await _botClient.SendTextMessageAsync(chat, $"✔ Converted to KINDLE format!");
                 }
                 else
                 {
