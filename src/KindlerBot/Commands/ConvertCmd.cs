@@ -142,6 +142,7 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
             }
 
             await _botClient.SendTextMessageAsync(chat, $"🎉 Successfully sent your book!");
+            _logger.LogInformation("Converted and sent book. Book name: {book}, User: {user}", doc.FileName, chat.Username);
         }
         catch (Exception ex)
         {
