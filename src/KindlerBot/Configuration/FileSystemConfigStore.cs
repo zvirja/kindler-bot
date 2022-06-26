@@ -39,7 +39,7 @@ internal class FileSystemConfigStore : IConfigStore
     public async Task<ChatId?> GetAdminChatId()
     {
         var config = await GetConfig();
-        return config.AdminChatId;
+        return config.AdminChatId != null ? new ChatId(config.AdminChatId) : null;
     }
 
     public async Task<Version?> GetLastAppVersion()

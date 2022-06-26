@@ -38,7 +38,7 @@ internal class TelegramCommands : ITelegramCommands
             return;
         }
 
-        var message = update.Message;
+        var message = update.Message!;
         bool IsTextMessage(string msg) => message.Type == MessageType.Text && message.Text == msg;
 
         if (IsTextMessage(Constants.StartCmd) || IsTextMessage(Constants.HelpCmd))
@@ -61,7 +61,7 @@ internal class TelegramCommands : ITelegramCommands
 
         if (message.Type == MessageType.Document)
         {
-            await _mediator.Send(new ConvertCmdRequest(message.Document, message.Chat), ct);
+            await _mediator.Send(new ConvertCmdRequest(message.Document!, message.Chat), ct);
             return;
         }
 

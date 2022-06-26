@@ -88,7 +88,7 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
             var sourceFilePath = Path.Join(tempDir.DirPath, doc.FileName);
             await using (var sourceFileStream = System.IO.File.Create(sourceFilePath))
             {
-                await _botClient.DownloadFileAsync(fileInfo.FilePath, sourceFileStream);
+                await _botClient.DownloadFileAsync(fileInfo.FilePath!, sourceFileStream);
             }
             await _botClient.SendTextMessageAsync(chat, "✅ Downloaded!");
 
@@ -111,7 +111,7 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
             }
 
             string convertedFilePath;
-            if (KindleSupportedFormats.Contains(Path.GetExtension(doc.FileName)))
+            if (KindleSupportedFormats.Contains(Path.GetExtension(doc.FileName!)))
             {
                 convertedFilePath = sourceFilePath;
                 await _botClient.SendTextMessageAsync(chat, $"ℹ Conversion skipped for {Path.GetExtension(doc.FileName)}");
