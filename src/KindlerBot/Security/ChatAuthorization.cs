@@ -19,10 +19,7 @@ internal class ChatAuthorization : IChatAuthorization
 
     public async ValueTask<bool> IsAuthorized(Update update)
     {
-        if (AuthorizedChatIds == null)
-        {
-            AuthorizedChatIds = (await _configStore.GetAllowedChatIds()).ToHashSet();
-        }
+        AuthorizedChatIds ??= (await _configStore.GetAllowedChatIds()).ToHashSet();
 
         if (AuthorizedChatIds.Count == 0)
         {
