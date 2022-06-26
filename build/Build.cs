@@ -153,10 +153,10 @@ class Build : NukeBuild
         var trigger = ResolveAppVeyorTrigger();
         return trigger switch
         {
-            AppVeyorTrigger.SemVerTag   => build.PushDocker,
-            AppVeyorTrigger.PR          => build.BuildDocker,
-            AppVeyorTrigger.MainBranch  => build.PushDocker,
-            _                           => build.BuildDocker
+            AppVeyorTrigger.SemVerTag  => build.PushDocker,
+            AppVeyorTrigger.MainBranch => build.PushDocker,
+            AppVeyorTrigger.PR         => build.BuildDocker,
+            _                          => build.BuildDocker
         };
     }
 
@@ -184,9 +184,9 @@ class Build : NukeBuild
         return (tag, isPr, branchName) switch
         {
             ({ } t, _, _) when Regex.IsMatch(t, "^v\\d.*") => AppVeyorTrigger.SemVerTag,
-            (_, true, _)                                                    => AppVeyorTrigger.PR,
-            (_, _, "main")                                                  => AppVeyorTrigger.MainBranch,
-            _                                                               => AppVeyorTrigger.UnknownBranchOrTag
+            (_, true, _)                                   => AppVeyorTrigger.PR,
+            (_, _, "main")                                 => AppVeyorTrigger.MainBranch,
+            _                                              => AppVeyorTrigger.UnknownBranchOrTag
         };
     }
 }
