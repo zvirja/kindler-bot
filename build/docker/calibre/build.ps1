@@ -4,8 +4,8 @@ param (
     [Switch] $Push = $false
 )
 
-. docker build --tag vps.zvirja.linkpc.net/aspnet-calibre:latest .
+. docker build --tag docker.zvirja.com/aspnet-calibre:latest .
 
 if ($Push) {
-    . docker push vps.zvirja.linkpc.net/aspnet-calibre:latest
+    . docker push docker.zvirja.com/aspnet-calibre:latest
 }

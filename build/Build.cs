@@ -30,7 +30,7 @@ class Build : NukeBuild
     [Parameter(Name = "BuildNumber")]
     readonly int BuildNumberParam = 0;
 
-    readonly string DockerImageName = "vps.zvirja.linkpc.net/kindler-bot";
+    readonly string DockerImageName = "docker.zvirja.com/kindler-bot";
 
     AbsolutePath SourceDirectory => RootDirectory / "src";
     AbsolutePath ArtifactsDir => RootDirectory / "artifacts";
