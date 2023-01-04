@@ -1,4 +1,4 @@
-FROM vps.zvirja.linkpc.net/aspnet-calibre:latest
+FROM docker.zvirja.com/aspnet-calibre:latest
 
 EXPOSE 80
 EXPOSE 443

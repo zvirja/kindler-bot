@@ -10,7 +10,7 @@ pull_requests:
   do_not_increment_build_number: true
 
 init:
-  - sh: echo $DOCKER_REGISTRY_PASSWORD | docker login --username="$DOCKER_REGISTRY_USERNAME" --password-stdin vps.zvirja.linkpc.net
+  - sh: echo $DOCKER_REGISTRY_PASSWORD | docker login --username="$DOCKER_REGISTRY_USERNAME" --password-stdin docker.zvirja.com
 
 build_script:
 - sh: chmod +x ./build.sh
