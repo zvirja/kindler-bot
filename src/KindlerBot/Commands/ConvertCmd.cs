@@ -120,11 +120,11 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
             {
                 await _botClient.SendTextMessageAsync(chat, "🔃 Converting book...");
 
-                convertedFilePath = sourceFilePath + ".mobi";
+                convertedFilePath = sourceFilePath + ".epub";
                 var conversionResult = await _calibreCli.ConvertBook(sourceFilePath, convertedFilePath);
                 if (conversionResult.IsSuccessful)
                 {
-                    await _botClient.SendTextMessageAsync(chat, $"✔ Converted to KINDLE format!");
+                    await _botClient.SendTextMessageAsync(chat, $"✔ Converted to KINDLE (.epub) format!");
                 }
                 else
                 {
