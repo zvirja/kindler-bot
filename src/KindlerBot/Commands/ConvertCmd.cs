@@ -57,19 +57,17 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
         _logger = logger;
     }
 
-    public async Task<Unit> Handle(ConvertCmdRequest request, CancellationToken cancellationToken)
+    public async Task Handle(ConvertCmdRequest request, CancellationToken cancellationToken)
     {
         var email = await _configStore.GetChatEmail(request.Chat.Id);
         if (email == null)
         {
             await _botClient.SendTextMessageAsync(request.Chat, "❌ Email is not configured. Fix it and try again!", cancellationToken: cancellationToken);
-            return Unit.Value;
+            return;
         }
 
         // Start conversion in background as it could take long time.
         _ = Task.Run(() => ConvertDocument(request.Doc, request.Chat, email), CancellationToken.None);
-
-        return Unit.Value;
     }
 
     private async Task ConvertDocument(Document doc, Chat chat, string email)
@@ -107,7 +105,7 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
             if (hasCover.IsSuccessful)
             {
                 await using var coverFileStream = System.IO.File.OpenRead(bookCoverPath);
-                await _botClient.SendPhotoAsync(chat, new InputMedia(coverFileStream, Path.GetFileName(bookCoverPath)));
+                await _botClient.SendPhotoAsync(chat, new InputFileStream(coverFileStream, Path.GetFileName(bookCoverPath)));
             }
 
             string convertedFilePath;

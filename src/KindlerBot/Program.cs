@@ -6,7 +6,6 @@ using KindlerBot.Conversion;
 using KindlerBot.Interactivity;
 using KindlerBot.Security;
 using KindlerBot.Services;
-using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,7 +36,7 @@ builder.Services.AddOptions<DebugConfiguration>().BindConfiguration(DebugConfigu
 builder.Services.AddHttpClient<ITelegramBotClient, TelegramBotClient>((httpClient, sp) =>
     new TelegramBotClient(sp.GetRequiredService<IOptions<BotConfiguration>>().Value.BotToken, httpClient));
 
-builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
+builder.Services.AddMediatR(c => c.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
 builder.Services.AddSingleton<IChatAuthorization, ChatAuthorization>();
 builder.Services.AddSingleton<ITelegramCommands, TelegramCommands>();

@@ -21,7 +21,7 @@ internal class HelpCmdHandler : IRequestHandler<HelpCmdRequest>
         _smtpConfig = smtpConfig.Value;
     }
 
-    public async Task<Unit> Handle(HelpCmdRequest request, CancellationToken cancellationToken)
+    public async Task Handle(HelpCmdRequest request, CancellationToken cancellationToken)
     {
         var msg = $"Kindler v{BotVersion.Current.AppVersion} ({BotVersion.Current.GitSha})\n" +
                   $"Send me a book doc and I'll send it to your Kindle 🚀\n" +
@@ -29,7 +29,5 @@ internal class HelpCmdHandler : IRequestHandler<HelpCmdRequest>
                   $"Make sure to add {_smtpConfig.FromEmail} to your list of allowed senders on Amazon website.";
 
         await _botClient.SendTextMessageAsync(request.Chat.Id, msg, cancellationToken: cancellationToken);
-
-        return Unit.Value;
     }
 }

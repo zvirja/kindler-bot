@@ -28,21 +28,19 @@ internal class ConfigureCmdHandler: IRequestHandler<ConfigureCmdRequest>, IReque
         _logger = logger;
     }
 
-    public async Task<Unit> Handle(GetConfigurationCmdRequest request, CancellationToken cancellationToken)
+    public async Task Handle(GetConfigurationCmdRequest request, CancellationToken cancellationToken)
     {
         string chatEmail = await _configManager.GetChatEmail(request.Chat) ?? "<unconfigured>";
         var config = $"🛠 Configuration\nEmail: {chatEmail}";
         await _botClient.SendTextMessageAsync(request.Chat, config, cancellationToken: cancellationToken);
-
-        return Unit.Value;
     }
 
-    public Task<Unit> Handle(ConfigureCmdRequest request, CancellationToken cancellationToken)
+    public Task Handle(ConfigureCmdRequest request, CancellationToken cancellationToken)
     {
         // Run workflow asynchronously, so we handle telegram updates each time.
         _ = Task.Run(() => ConfigureWorkflow(request.Chat), CancellationToken.None);
 
-        return Unit.Task;
+        return Task.CompletedTask;
     }
 
     private async Task ConfigureWorkflow(Chat chat)
