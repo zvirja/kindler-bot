@@ -7,8 +7,7 @@ RUN apt-get update && \
 
 RUN wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sh /dev/stdin install_dir=/opt
 
-EXPOSE 80
-EXPOSE 443
+EXPOSE 8080
 
 WORKDIR /app
 
