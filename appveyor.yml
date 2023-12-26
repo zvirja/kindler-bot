@@ -1,4 +1,4 @@
-image: Ubuntu2004
+image: Ubuntu2204
 
 environment:
   DOCKER_REGISTRY_USERNAME:
