@@ -143,7 +143,15 @@ class Build : NukeBuild
         });
 
     Target CompleteBuild => _ => _
-        .DependsOn(BuildDocker);
+        .DependsOn(BuildDocker)
+        .Executes(() =>
+        {
+            var builderExists = Docker("buildx ls").Any(x => x.Text.StartsWith("kindler"));
+            if (builderExists)
+            {
+                Docker("buildx rm kindler");
+            }
+        });
 
     // ==============================================
     // ================== AppVeyor ==================
