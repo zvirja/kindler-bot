@@ -109,9 +109,11 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
             }
 
             string convertedFilePath;
+            bool convertedBook;
             if (KindleSupportedFormats.Contains(Path.GetExtension(doc.FileName!)))
             {
                 convertedFilePath = sourceFilePath;
+                convertedBook = false;
                 await _botClient.SendTextMessageAsync(chat, $"ℹ Conversion skipped for {Path.GetExtension(doc.FileName)}");
             }
             else
@@ -119,6 +121,7 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
                 await _botClient.SendTextMessageAsync(chat, "🔃 Converting book...");
 
                 convertedFilePath = sourceFilePath + ".epub";
+                convertedBook = true;
                 var conversionResult = await _calibreCli.ConvertBook(sourceFilePath, convertedFilePath);
                 if (conversionResult.IsSuccessful)
                 {
@@ -140,7 +143,10 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
             }
 
             await _botClient.SendTextMessageAsync(chat, $"🎉 Successfully sent your book!");
-            _logger.LogInformation("Converted and sent book. Book name: {book}, User: {user}", doc.FileName, chat.Username);
+
+            _logger.LogInformation(
+                convertedBook ? "Converted and sent book. Book name: {book}, User: {user}" : "Sent book without conversion. Book name: {book}, User: {user}",
+                doc.FileName, chat.Username);
         }
         catch (Exception ex)
         {
