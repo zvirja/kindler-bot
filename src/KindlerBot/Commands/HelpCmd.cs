@@ -5,6 +5,7 @@ using MediatR;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace KindlerBot.Commands;
 
@@ -23,11 +24,15 @@ internal class HelpCmdHandler : IRequestHandler<HelpCmdRequest>
 
     public async Task Handle(HelpCmdRequest request, CancellationToken cancellationToken)
     {
-        var msg = $"Kindler v{BotVersion.Current.AppVersion} ({BotVersion.Current.GitSha})\n" +
-                  $"Send me a book doc and I'll send it to your Kindle 🚀\n" +
-                  $"\n" +
-                  $"Make sure to add {_smtpConfig.FromEmail} to your list of allowed senders on Amazon website.";
+        var msg = $"""
+                   Kindler v{BotVersion.Current.AppVersion} ({BotVersion.Current.GitSha})
+                   Send me a book file and I'll send it to your Kindle 🚀
 
-        await _botClient.SendTextMessageAsync(request.Chat.Id, msg, cancellationToken: cancellationToken);
+                   Make sure to add {_smtpConfig.FromEmail} to your list of allowed senders on Amazon website.
+
+                   To find your Kindle email address, visit the [Manage Your Content and Devices -> Preferences](https://www.amazon.com/hz/mycd/myx#/home/settings/pdoc) and navigate to *Personal Document Settings* section at the bottom.
+                   """;
+
+        await _botClient.SendTextMessageAsync(request.Chat.Id, msg, parseMode: ParseMode.Markdown, cancellationToken: cancellationToken);
     }
 }

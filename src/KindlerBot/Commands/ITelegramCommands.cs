@@ -9,5 +9,7 @@ public interface ITelegramCommands
 {
     IEnumerable<BotCommand> AvailableCommands { get; }
 
-    Task DispatchUpdate(Update update, CancellationToken ct);
+    Task DispatchAuthorizedUpdate(Update update, CancellationToken ct);
+
+    Task DispatchNonAuthorizedUpdate(Update update, CancellationToken ct);
 }

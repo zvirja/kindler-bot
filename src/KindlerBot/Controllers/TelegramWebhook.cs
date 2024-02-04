@@ -37,7 +37,8 @@ public class TelegramWebhook : Controller
 
         if (!await _chatAuthorization.IsAuthorized(update))
         {
-            _logger.LogWarning("Denied authorization for chat {chat id}", update.TryGetChatId());
+            _logger.LogWarning("Received message from non-authorized chat {chat id}", update.TryGetChatId());
+            await updateDispatcher.DispatchNonAuthorizedUpdate(update, ct: default);
             return Ok();
         }
 
@@ -48,7 +49,7 @@ public class TelegramWebhook : Controller
                 return Ok();
             }
 
-            await updateDispatcher.DispatchUpdate(update, ct: default);
+            await updateDispatcher.DispatchAuthorizedUpdate(update, ct: default);
         }
         catch (Exception ex)
         {

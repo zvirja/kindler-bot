@@ -17,6 +17,8 @@ internal class FileSystemConfigStore : IConfigStore
     private readonly DeploymentConfiguration _deploymentConfig;
     private readonly SemaphoreSlim _storeLock = new(1, 1);
 
+    private HashSet<ChatId>? AllowedChatIdsCached { get; set; }
+
     public FileSystemConfigStore(IOptions<DeploymentConfiguration> deploymentConfig)
     {
         _deploymentConfig = deploymentConfig.Value;
@@ -30,10 +32,45 @@ internal class FileSystemConfigStore : IConfigStore
         return email;
     }
 
-    public async Task<ChatId[]> GetAllowedChatIds()
+    public async ValueTask<HashSet<ChatId>> GetAllowedChatIds()
+    {
+        if (AllowedChatIdsCached != null)
+        {
+            return AllowedChatIdsCached;
+        }
+
+        var allowedChats = (await GetAllowedChats()).Select(x => x.ChatId).ToHashSet();
+
+        var adminChat = await GetAdminChatId();
+        if (adminChat is not null)
+        {
+            allowedChats.Add(adminChat);
+        }
+
+        return AllowedChatIdsCached = allowedChats;
+    }
+
+    public async Task<AllowedChat[]> GetAllowedChats()
     {
         var config = await GetConfig();
-        return config.AllowedChatIds.Select(x => new ChatId(x)).ToArray();
+        return config.AllowedChats.Select(x => new AllowedChat(new ChatId(x.ChatId), x.Description)).ToArray();
+    }
+
+    public async Task AddAllowedChat(AllowedChat chat)
+    {
+        await StoreConfig(config =>
+        {
+            var chatId = chat.ChatId.ToString();
+
+            if (config.AllowedChats.Any(x => string.Equals(x.ChatId, chatId, StringComparison.Ordinal)))
+            {
+                return;
+            }
+
+            config.AllowedChats.Add(new Config.AllowedChat(ChatId: chatId, Description: chat.Description));
+        });
+
+        AllowedChatIdsCached = null;
     }
 
     public async Task<ChatId?> GetAdminChatId()
@@ -103,10 +140,13 @@ internal class FileSystemConfigStore : IConfigStore
     private class Config
     {
         public Dictionary<string, string> UserEmails { get; set; } = new();
-        public string[] AllowedChatIds { get; set; } = Array.Empty<string>();
+
+        public List<AllowedChat> AllowedChats { get; set; } = new();
 
         public string? LastVersion { get; set; }
 
         public string? AdminChatId { get; set; }
+
+        public record AllowedChat(string ChatId, string? Description);
     }
 }

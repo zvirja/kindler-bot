@@ -10,6 +10,9 @@ internal static class Util
         if (update.Type == UpdateType.Message)
             return update.Message!.Chat;
 
+        if (update.Type == UpdateType.CallbackQuery)
+            return update.CallbackQuery!.Message?.Chat;
+
         return null;
     }
 

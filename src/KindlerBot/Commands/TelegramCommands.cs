@@ -31,7 +31,7 @@ internal class TelegramCommands : ITelegramCommands
         new() { Command = Constants.GetConfigurationCmd, Description = "Get my preferences" },
     };
 
-    public async Task DispatchUpdate(Update update, CancellationToken ct)
+    public async Task DispatchAuthorizedUpdate(Update update, CancellationToken ct)
     {
         if (update.Type != UpdateType.Message)
         {
@@ -66,5 +66,15 @@ internal class TelegramCommands : ITelegramCommands
         }
 
         await _mediator.Send(new UnknownCmdRequest(update), ct);
+    }
+
+    public async Task DispatchNonAuthorizedUpdate(Update update, CancellationToken ct)
+    {
+        if (update.Type != UpdateType.Message)
+        {
+            return;
+        }
+
+        await _mediator.Send(new AuthorizeCmdRequest(ChatToAuthorize: update.Message!.Chat), ct);
     }
 }
