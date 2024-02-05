@@ -30,7 +30,7 @@ internal class AuthorizeCmdHandler : IRequestHandler<AuthorizeCmdRequest>
 
     public Task Handle(AuthorizeCmdRequest request, CancellationToken cancellationToken)
     {
-        // Run workflow asynchronously, so we handle telegram updates each time.
+        // Run workflow asynchronously, as approval can take really long time and we don't want Telegram to timeout.
         _ = Task.Run(DoHandle, CancellationToken.None);
 
         return Task.CompletedTask;
