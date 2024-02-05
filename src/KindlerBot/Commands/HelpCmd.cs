@@ -30,7 +30,7 @@ internal class HelpCmdHandler : IRequestHandler<HelpCmdRequest>
 
                    Make sure to add {_smtpConfig.FromEmail} to your list of allowed senders on Amazon website.
 
-                   To find your Kindle email address, visit the [Manage Your Content and Devices -> Preferences](https://www.amazon.com/hz/mycd/myx#/home/settings/pdoc) and navigate to *Personal Document Settings* section at the bottom.
+                   To find your Kindle email settings, visit the [Manage Your Content and Devices -> Preferences](https://www.amazon.com/hz/mycd/myx#/home/settings/pdoc) and navigate to *Personal Document Settings* section at the bottom.
                    """;
 
         await _botClient.SendTextMessageAsync(request.Chat.Id, msg, parseMode: ParseMode.Markdown, cancellationToken: cancellationToken);
