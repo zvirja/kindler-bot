@@ -58,8 +58,8 @@ class Build : NukeBuild
     Target Clean => _ => _
         .Executes(() =>
         {
-            SourceDirectory.GlobDirectories("**/bin", "**/obj").ForEach(DeleteDirectory);
-            EnsureCleanDirectory(ArtifactsDir);
+            SourceDirectory.GlobDirectories("**/bin", "**/obj").ForEach(x => x.DeleteDirectory());
+            ArtifactsDir.CreateOrCleanDirectory();
         });
 
     Target Prepare => _ => _
@@ -77,7 +77,7 @@ class Build : NukeBuild
                 .AddProperty("FileVersion", CurrentBuildVersion.FileVersion)
                 .AddProperty("InformationalVersion", CurrentBuildVersion.InfoVersion)
                 .AddProperty("GitSha", CurrentBuildVersion.GitSha)
-                .SetVerbosity(DotNetVerbosity.Minimal)
+                .SetVerbosity(DotNetVerbosity.minimal)
             );
         });
 
@@ -88,13 +88,13 @@ class Build : NukeBuild
             DotNetPublish(c => c
                 .SetProject(Solution)
                 .SetConfiguration(Configuration)
-                .SetOutput(ArtifactsDir)
                 .SetVersion(CurrentBuildVersion.NuGetVersion)
+                .SetProperty("PublishDir", ArtifactsDir)
                 .AddProperty("AssemblyVersion", CurrentBuildVersion.AssemblyVersion)
                 .AddProperty("FileVersion", CurrentBuildVersion.FileVersion)
                 .AddProperty("InformationalVersion", CurrentBuildVersion.InfoVersion)
                 .AddProperty("GitSha", CurrentBuildVersion.GitSha)
-                .SetVerbosity(DotNetVerbosity.Minimal)
+                .SetVerbosity(DotNetVerbosity.minimal)
             );
         });
 
