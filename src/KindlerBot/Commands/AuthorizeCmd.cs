@@ -63,40 +63,40 @@ internal class AuthorizeCmdHandler : IRequestHandler<AuthorizeCmdRequest>
                 new[] { InlineKeyboardButton.WithCallbackData("Approve"), InlineKeyboardButton.WithCallbackData("Reject") }
             );
 
-            await BotClient.SendTextMessageAsync(adminChatId, approvalMsg, replyMarkup: replyMarkup, cancellationToken: cancellationToken);
+            var approveMsg = await BotClient.SendTextMessageAsync(adminChatId, approvalMsg, replyMarkup: replyMarkup, cancellationToken: cancellationToken);
 
             var replyUpdate = await InteractionManager.AwaitNextUpdate(adminChatId);
-            if (replyUpdate.Type != UpdateType.CallbackQuery)
-            {
-                return;
-            }
 
             string approvalStatusLine;
 
-            if (string.Equals(replyUpdate.CallbackQuery!.Data, "Approve", StringComparison.Ordinal))
+            if (replyUpdate.CallbackQuery is { } callbackReply)
             {
-                await ConfigStore.AddAllowedChat(new AllowedChat(chatId, chatDescription));
+                if (string.Equals(callbackReply.Data, "Approve", StringComparison.Ordinal))
+                {
+                    await ConfigStore.AddAllowedChat(new AllowedChat(chatId, chatDescription));
 
-                await BotClient.SendTextMessageAsync(chatId, text: "Your bot usage was approved.\nPlease click here: /start", cancellationToken: cancellationToken);
+                    await BotClient.SendTextMessageAsync(chatId, text: "Your bot usage was approved.\nPlease click here: /start", cancellationToken: cancellationToken);
 
-                approvalStatusLine = "✅ Approved new user request!";
+                    approvalStatusLine = "✅ Approved new user request!";
+                }
+                else
+                {
+                    approvalStatusLine = "❌ Rejected new user request!";
+                }
             }
             else
             {
-                approvalStatusLine = "❌ Rejected new user request!";
+                approvalStatusLine = "⚠ Approval flow was interrupted!";
             }
 
             var approvalStatusMsg = $"""
-                               {approvalStatusLine}
+                                     {approvalStatusLine}
 
-                               Chat ID: {chatId}
-                               Chat Info: {chatDescription}
-                               """;
+                                     Chat ID: {chatId}
+                                     Chat Info: {chatDescription}
+                                     """;
 
-            if (replyUpdate.CallbackQuery.Message is {} replyMsg)
-            {
-                await BotClient.EditMessageTextAsync(chatId: replyMsg.Chat, messageId: replyMsg.MessageId, text: approvalStatusMsg, cancellationToken: cancellationToken);
-            }
+            await BotClient.EditMessageTextAsync(chatId: approveMsg.Chat, messageId: approveMsg.MessageId, text: approvalStatusMsg, cancellationToken: cancellationToken);
         }
     }
 }
