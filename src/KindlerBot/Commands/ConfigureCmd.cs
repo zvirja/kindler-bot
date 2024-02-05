@@ -51,7 +51,7 @@ internal class ConfigureCmdHandler: IRequestHandler<ConfigureCmdRequest>, IReque
 
             var mailReply = await _interactionManager.AwaitNextUpdate(chat);
             var mailAddress = mailReply.TryGetTextMessage();
-            if (mailAddress == null || !mailAddress.EndsWith("@kindle.com"))
+            if (mailAddress == null || !mailAddress.Contains("@"))
             {
                 await _botClient.SendTextMessageAsync(chat, $"⚠ Wrong email address: {mailAddress}");
                 return;
