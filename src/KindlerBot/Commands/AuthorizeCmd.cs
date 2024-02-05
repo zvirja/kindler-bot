@@ -60,7 +60,7 @@ internal class AuthorizeCmdHandler : IRequestHandler<AuthorizeCmdRequest>
                                """;
 
             var replyMarkup = new InlineKeyboardMarkup(
-                new[] { InlineKeyboardButton.WithCallbackData("Approve"), InlineKeyboardButton.WithCallbackData("Reject") }
+                new[] { InlineKeyboardButton.WithCallbackData("Approve"), InlineKeyboardButton.WithCallbackData("Ignore") }
             );
 
             var approveMsg = await BotClient.SendTextMessageAsync(adminChatId, approvalMsg, replyMarkup: replyMarkup, cancellationToken: cancellationToken);
@@ -81,7 +81,7 @@ internal class AuthorizeCmdHandler : IRequestHandler<AuthorizeCmdRequest>
                 }
                 else
                 {
-                    approvalStatusLine = "❌ Rejected new user request!";
+                    approvalStatusLine = "❌ Ignored new user request!";
                 }
             }
             else
