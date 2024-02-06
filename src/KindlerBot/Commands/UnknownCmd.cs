@@ -26,7 +26,7 @@ internal class UnknownCmdHandler : IRequestHandler<UnknownCmdRequest>
         {
             string message = update.Type switch
             {
-                UpdateType.Message => $@"¯\_(ツ)_/¯ Unknown text command: {update.Message}",
+                UpdateType.Message => $@"¯\_(ツ)_/¯ Unknown {update.Message!.Type} message command",
                 UpdateType.CallbackQuery => $@"¯\_(ツ)_/¯ Unknown callback command: {update.CallbackQuery!.Data}",
                 _ => $@"¯\_(ツ)_/¯ Unknown command. Update type: {update.Type:G}"
             };

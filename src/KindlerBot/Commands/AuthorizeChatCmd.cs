@@ -104,7 +104,7 @@ internal class AuthorizeChatCmdHandler(ITelegramBotClient botClient, IConfigStor
         }
         else
         {
-            approvalStatusLine = "❌ Ignored new user request!";
+            approvalStatusLine = "✖️ Ignored new user request!";
         }
 
         if (request.CallbackQuery.Message is { } approveMsg)
