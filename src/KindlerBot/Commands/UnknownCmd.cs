@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using MediatR;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace KindlerBot.Commands;
 
@@ -19,9 +20,18 @@ internal class UnknownCmdHandler : IRequestHandler<UnknownCmdRequest>
 
     public async Task Handle(UnknownCmdRequest request, CancellationToken cancellationToken)
     {
-        if (request.Update.TryGetChatId() is { } chatId)
+        Update update = request.Update;
+
+        if (update.TryGetChatId() is { } chatId)
         {
-            await _botClient.SendTextMessageAsync(chatId, @"¯\_(ツ)_/¯ Unknown command", cancellationToken: cancellationToken);
+            string message = update.Type switch
+            {
+                UpdateType.Message => $@"¯\_(ツ)_/¯ Unknown text command: {update.Message}",
+                UpdateType.CallbackQuery => $@"¯\_(ツ)_/¯ Unknown callback command: {update.CallbackQuery!.Data}",
+                _ => $@"¯\_(ツ)_/¯ Unknown command. Update type: {update.Type:G}"
+            };
+
+            await _botClient.SendTextMessageAsync(chatId, message, cancellationToken: cancellationToken);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -33,6 +34,20 @@ internal class TelegramCommands : ITelegramCommands
 
     public async Task DispatchAuthorizedUpdate(Update update, CancellationToken ct)
     {
+        if (update.Type == UpdateType.CallbackQuery)
+        {
+            var callbackQuery = update.CallbackQuery!;
+
+            if (callbackQuery.Data?.StartsWith(AuthorizeChatCallbackCmdRequest.CallbackDataPrefix, StringComparison.Ordinal) == true)
+            {
+                await _mediator.Send(new AuthorizeChatCallbackCmdRequest(callbackQuery), ct);
+                return;
+            }
+
+            await _mediator.Send(new UnknownCmdRequest(update), ct);
+            return;
+        }
+
         if (update.Type != UpdateType.Message)
         {
             return;
@@ -75,6 +90,6 @@ internal class TelegramCommands : ITelegramCommands
             return;
         }
 
-        await _mediator.Send(new AuthorizeCmdRequest(ChatToAuthorize: update.Message!.Chat), ct);
+        await _mediator.Send(new AuthorizeChatCmdRequest(ChatToAuthorize: update.Message!.Chat), ct);
     }
 }
