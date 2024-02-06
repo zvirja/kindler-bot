@@ -73,10 +73,10 @@ class Build : NukeBuild
             DotNetBuild(c => c
                 .SetProjectFile(Solution)
                 .SetConfiguration(Configuration)
-                .AddProperty("AssemblyVersion", CurrentBuildVersion.AssemblyVersion)
-                .AddProperty("FileVersion", CurrentBuildVersion.FileVersion)
-                .AddProperty("InformationalVersion", CurrentBuildVersion.InfoVersion)
-                .AddProperty("GitSha", CurrentBuildVersion.GitSha)
+                .SetProperty("AssemblyVersion", CurrentBuildVersion.AssemblyVersion)
+                .SetProperty("FileVersion", CurrentBuildVersion.FileVersion)
+                .SetProperty("InformationalVersion", CurrentBuildVersion.InfoVersion)
+                .SetProperty("GitSha", CurrentBuildVersion.GitSha)
                 .SetVerbosity(DotNetVerbosity.minimal)
             );
         });
@@ -90,10 +90,10 @@ class Build : NukeBuild
                 .SetConfiguration(Configuration)
                 .SetVersion(CurrentBuildVersion.NuGetVersion)
                 .SetProperty("PublishDir", ArtifactsDir)
-                .AddProperty("AssemblyVersion", CurrentBuildVersion.AssemblyVersion)
-                .AddProperty("FileVersion", CurrentBuildVersion.FileVersion)
-                .AddProperty("InformationalVersion", CurrentBuildVersion.InfoVersion)
-                .AddProperty("GitSha", CurrentBuildVersion.GitSha)
+                .SetProperty("AssemblyVersion", CurrentBuildVersion.AssemblyVersion)
+                .SetProperty("FileVersion", CurrentBuildVersion.FileVersion)
+                .SetProperty("InformationalVersion", CurrentBuildVersion.InfoVersion)
+                .SetProperty("GitSha", CurrentBuildVersion.GitSha)
                 .SetVerbosity(DotNetVerbosity.minimal)
             );
         });
