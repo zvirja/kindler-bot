@@ -20,7 +20,7 @@ internal record AuthorizeCmdRequest(ChatId AdminChatId) : IRequest
 
 internal record AuthorizeReviewCmdRequest(ChatId AdminChatId, string CmdText) : IRequest
 {
-    public const string CmdPrefix = "/authorize/review/";
+    public const string CmdPrefix = "/authorize_review_";
 
     public static string BuildData(ChatId chatId)
     {
@@ -40,7 +40,7 @@ internal record AuthorizeReviewCmdRequest(ChatId AdminChatId, string CmdText) : 
 
 internal record AuthorizeChatCallbackCmdRequest(CallbackQuery CallbackQuery) : IRequest
 {
-    public const string CallbackDataPrefix = "/authorize/callback/";
+    public const string CallbackDataPrefix = "/authorize_callback_";
 
     public static string BuildData(ApprovalReply reply, ChatId chatId, string? chatDescription)
     {
