@@ -5,7 +5,7 @@ using Telegram.Bot.Types;
 
 namespace KindlerBot.Configuration;
 
-internal record AllowedChat(ChatId ChatId, string? Description);
+public record AllowedChat(ChatId ChatId, string? ChatDescription);
 
 internal interface IConfigStore
 {
@@ -13,11 +13,11 @@ internal interface IConfigStore
 
     public Task<string?> GetChatEmail(ChatId chatId);
 
-    public ValueTask<HashSet<ChatId>> GetAllowedChatIds();
-
     public Task<AllowedChat[]> GetAllowedChats();
 
     public Task AddAllowedChat(AllowedChat chat);
+
+    public Task RemoveAllowedChat(ChatId chatId);
 
     public Task<ChatId?> GetAdminChatId();
 

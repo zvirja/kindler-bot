@@ -25,6 +25,7 @@ builder.Host.UseSerilog((ctx, lc) =>
 builder.Services.AddHostedService<WebhookConfiguration>();
 builder.Services.AddHostedService<CommandConfiguration>();
 builder.Services.AddHostedService<UpdateNotifier>();
+builder.Services.AddHostedService<ChatApprovalCleanup>();
 
 builder.Services.AddOptions<BotConfiguration>().BindConfiguration(BotConfiguration.SectionName)
     .Configure(config => { config.WebhookUrlSecret ??= Guid.NewGuid().ToString("N"); });
@@ -39,6 +40,7 @@ builder.Services.AddHttpClient<ITelegramBotClient, TelegramBotClient>((httpClien
 builder.Services.AddMediatR(c => c.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
 builder.Services.AddSingleton<IChatAuthorization, ChatAuthorization>();
+builder.Services.AddSingleton<IChatApprovalRequestsStore, FileSystemChatApprovalRequestsStore>();
 builder.Services.AddSingleton<ITelegramCommands, TelegramCommands>();
 builder.Services.AddSingleton<IInteractionManager, InteractionManager>();
 builder.Services.AddSingleton<IConfigStore, FileSystemConfigStore>();

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using KindlerBot.Security;
 using MediatR;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -19,10 +20,12 @@ internal class TelegramCommands : ITelegramCommands
     }
 
     private readonly IMediator _mediator;
+    private readonly IChatAuthorization _chatAuthorization;
 
-    public TelegramCommands(IMediator mediator)
+    public TelegramCommands(IMediator mediator, IChatAuthorization chatAuthorization)
     {
         _mediator = mediator;
+        _chatAuthorization = chatAuthorization;
     }
 
     public IEnumerable<BotCommand> AvailableCommands { get; } = new BotCommand[]
@@ -32,7 +35,7 @@ internal class TelegramCommands : ITelegramCommands
         new() { Command = Constants.GetConfigurationCmd, Description = "Get my preferences" },
     };
 
-    public async Task DispatchAuthorizedUpdate(Update update, CancellationToken ct)
+    public async Task DispatchUpdate(Update update, CancellationToken ct)
     {
         if (update.Type == UpdateType.CallbackQuery)
         {
@@ -55,6 +58,7 @@ internal class TelegramCommands : ITelegramCommands
 
         var message = update.Message!;
         bool IsTextMessage(string msg) => message.Type == MessageType.Text && message.Text == msg;
+        bool IsTextMessageStartWith(string prefix) => message.Type == MessageType.Text && message.Text?.StartsWith(prefix) == true;
 
         if (IsTextMessage(Constants.StartCmd) || IsTextMessage(Constants.HelpCmd))
         {
@@ -80,16 +84,21 @@ internal class TelegramCommands : ITelegramCommands
             return;
         }
 
-        await _mediator.Send(new UnknownCmdRequest(update), ct);
-    }
-
-    public async Task DispatchNonAuthorizedUpdate(Update update, CancellationToken ct)
-    {
-        if (update.Type != UpdateType.Message)
+        if (await _chatAuthorization.IsAdminChat(update))
         {
-            return;
+            if (IsTextMessage(AuthorizeCmdRequest.CmdText))
+            {
+                await _mediator.Send(new AuthorizeCmdRequest(message.Chat), ct);
+                return;
+            }
+
+            if (IsTextMessageStartWith(AuthorizeReviewCmdRequest.CmdPrefix))
+            {
+                await _mediator.Send(new AuthorizeReviewCmdRequest(message.Chat, message.Text!), ct);
+                return;
+            }
         }
 
-        await _mediator.Send(new AuthorizeChatCmdRequest(ChatToAuthorize: update.Message!.Chat), ct);
+        await _mediator.Send(new UnknownCmdRequest(update), ct);
     }
 }
