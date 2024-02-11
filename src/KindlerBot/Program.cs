@@ -35,7 +35,10 @@ builder.Services.AddOptions<CalibreCliConfiguration>().BindConfiguration(Calibre
 builder.Services.AddOptions<DebugConfiguration>().BindConfiguration(DebugConfiguration.SectionName);
 
 builder.Services.AddHttpClient<ITelegramBotClient, TelegramBotClient>((httpClient, sp) =>
-    new TelegramBotClient(sp.GetRequiredService<IOptions<BotConfiguration>>().Value.BotToken, httpClient));
+{
+    var botConfig = sp.GetRequiredService<IOptions<BotConfiguration>>().Value;
+    return new TelegramBotClient(new TelegramBotClientOptions(token: botConfig.BotToken, baseUrl: botConfig.BotApiServer), httpClient);
+});
 
 builder.Services.AddMediatR(c => c.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 

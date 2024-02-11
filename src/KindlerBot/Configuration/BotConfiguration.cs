@@ -8,5 +8,7 @@ public class BotConfiguration
 
     public string BotToken { get; set; }
 
+    public string? BotApiServer { get; set; }
+
     public string WebhookUrlSecret { get; set; }
 }
