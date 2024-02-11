@@ -1,4 +1,5 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
+ARG TARGETPLATFORM
 
 # See list here: https://calibre-ebook.com/download_linux
 RUN apt-get update && \
@@ -11,6 +12,6 @@ EXPOSE 8080
 
 WORKDIR /app
 
-COPY . .
+COPY ./${TARGETPLATFORM}/ .
 
 ENTRYPOINT ["dotnet", "KindlerBot.dll"]

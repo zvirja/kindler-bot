@@ -85,17 +85,22 @@ class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            DotNetPublish(c => c
-                .SetProject(Solution)
-                .SetConfiguration(Configuration)
-                .SetVersion(CurrentBuildVersion.NuGetVersion)
-                .SetProperty("PublishDir", ArtifactsDir)
-                .SetProperty("AssemblyVersion", CurrentBuildVersion.AssemblyVersion)
-                .SetProperty("FileVersion", CurrentBuildVersion.FileVersion)
-                .SetProperty("InformationalVersion", CurrentBuildVersion.InfoVersion)
-                .SetProperty("GitSha", CurrentBuildVersion.GitSha)
-                .SetVerbosity(DotNetVerbosity.minimal)
-            );
+            foreach (var (rid, path) in new[] { ("linux-arm64", "linux/arm64"), ("linux-x64", "linux/amd64") })
+            {
+                DotNetPublish(c => c
+                    .SetProject(Solution)
+                    .SetConfiguration(Configuration)
+                    .SetVersion(CurrentBuildVersion.NuGetVersion)
+                    .SetProperty("PublishDir", ArtifactsDir / path)
+                    .SetPublishReadyToRun(true)
+                    .SetRuntime(rid)
+                    .SetProperty("AssemblyVersion", CurrentBuildVersion.AssemblyVersion)
+                    .SetProperty("FileVersion", CurrentBuildVersion.FileVersion)
+                    .SetProperty("InformationalVersion", CurrentBuildVersion.InfoVersion)
+                    .SetProperty("GitSha", CurrentBuildVersion.GitSha)
+                    .SetVerbosity(DotNetVerbosity.minimal)
+                );
+            }
         });
 
     Target BuildDocker => _ => _
