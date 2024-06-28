@@ -105,6 +105,7 @@ class Build : NukeBuild
 
     Target BuildDocker => _ => _
         .DependsOn(Publish)
+        .Triggers(CleanDockerBuilder)
         .Executes(() =>
         {
             // From https://docs.docker.com/build/building/multi-platform/#qemu
@@ -147,8 +148,8 @@ class Build : NukeBuild
             );
         });
 
-    Target CompleteBuild => _ => _
-        .DependsOn(BuildDocker)
+    Target CleanDockerBuilder => _ => _
+        .After(BuildDocker, PushDocker)
         .Executes(() =>
         {
             var builderExists = Docker("buildx ls").Any(x => x.Text.StartsWith("kindler"));
@@ -157,6 +158,9 @@ class Build : NukeBuild
                 Docker("buildx rm kindler");
             }
         });
+
+    Target CompleteBuild => _ => _
+        .DependsOn(BuildDocker);
 
     // ==============================================
     // ================== AppVeyor ==================
