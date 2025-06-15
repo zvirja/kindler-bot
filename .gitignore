@@ -9,4 +9,5 @@ riderModule.iml
 artifacts/
 
 /.vs
+/src/.vs
 *.user
