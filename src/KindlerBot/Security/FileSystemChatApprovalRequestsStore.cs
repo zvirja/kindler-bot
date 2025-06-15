@@ -65,7 +65,7 @@ internal class FileSystemChatApprovalRequestsStore : FileSystemStoreBase<FileSys
 
     internal class StoreData
     {
-        public List<StoreApprovalRequest> ApprovalRequests { get; } = new();
+        public List<StoreApprovalRequest> ApprovalRequests { get; set; } = new();
 
         public record StoreApprovalRequest(string ChatId, string? ChatDescription, DateTimeOffset CreationTime)
         {

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using KindlerBot.Configuration;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 
 namespace KindlerBot.IO;
 
@@ -28,7 +28,8 @@ internal abstract class FileSystemStoreBase<TStoreData> where TStoreData: class,
             return new TStoreData();
 
         var fileContents = await File.ReadAllTextAsync(StoreFilePath);
-        return JsonConvert.DeserializeObject<TStoreData>(fileContents)!;
+
+        return JsonSerializer.Deserialize<TStoreData>(fileContents, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true })!;
     }
 
     protected async Task UpdateStoreData(Action<TStoreData> updateData)
@@ -38,7 +39,7 @@ internal abstract class FileSystemStoreBase<TStoreData> where TStoreData: class,
         {
             var storeData = await GetStoreData();
             updateData(storeData);
-            await File.WriteAllTextAsync(StoreFilePath, JsonConvert.SerializeObject(storeData, Formatting.Indented));
+            await File.WriteAllTextAsync(StoreFilePath, JsonSerializer.Serialize(storeData, new JsonSerializerOptions() { WriteIndented = true }));
         }
         finally
         {
