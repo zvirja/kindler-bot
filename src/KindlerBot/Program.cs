@@ -50,7 +50,7 @@ builder.Services.AddSingleton<IConfigStore, FileSystemConfigStore>();
 builder.Services.AddSingleton<ICalibreCli, CalibreCli>();
 builder.Services.AddSingleton<ICalibreCliExec, CalibreCliExec>();
 
-builder.Services.AddControllers().AddNewtonsoftJson();
+builder.Services.AddControllers();
 
 builder.Services.AddHttpLogging(c => c.LoggingFields = HttpLoggingFields.All);
 
