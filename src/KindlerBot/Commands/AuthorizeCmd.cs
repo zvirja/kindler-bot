@@ -42,12 +42,12 @@ internal record AuthorizeChatCallbackCmdRequest(CallbackQuery CallbackQuery) : I
 {
     public const string CallbackDataPrefix = "/authorize_callback_";
 
-    public static string BuildData(ApprovalReply reply, ChatId chatId, string? chatDescription)
+    public static string BuildData(ApprovalReply reply, ChatId chatId)
     {
-        return $"{CallbackDataPrefix}{reply:G}_{chatId}_{Convert.ToBase64String(Encoding.UTF8.GetBytes(chatDescription ?? ""))}";
+        return $"{CallbackDataPrefix}{reply:G}_{chatId}";
     }
 
-    public static (ApprovalReply reply, ChatId chatId, string? chatDescription) ParseData(string data)
+    public static (ApprovalReply reply, ChatId chatId) ParseData(string data)
     {
         if (!data.StartsWith(CallbackDataPrefix))
             throw new ArgumentException("Wrong data", nameof(data));
@@ -56,14 +56,9 @@ internal record AuthorizeChatCallbackCmdRequest(CallbackQuery CallbackQuery) : I
 
         var parts = data.Split("_");
 
-        string? chatDescription = Encoding.UTF8.GetString(Convert.FromBase64String(parts[2]));
-        if (string.IsNullOrEmpty(chatDescription))
-            chatDescription = null;
-
         return (
             Enum.Parse<ApprovalReply>(parts[0]),
-            new ChatId(parts[1]),
-            chatDescription
+            new ChatId(parts[1])
         );
     }
 
@@ -146,10 +141,10 @@ internal class AuthorizeCmdHandler(ITelegramBotClient botClient, IChatAuthorizat
             {
                 InlineKeyboardButton.WithCallbackData(
                     "Allow",
-                    AuthorizeChatCallbackCmdRequest.BuildData(AuthorizeChatCallbackCmdRequest.ApprovalReply.Allow, chatIdToReview, chatDescription)),
+                    AuthorizeChatCallbackCmdRequest.BuildData(AuthorizeChatCallbackCmdRequest.ApprovalReply.Allow, chatIdToReview)),
                 InlineKeyboardButton.WithCallbackData(
                     "Deny",
-                    AuthorizeChatCallbackCmdRequest.BuildData(AuthorizeChatCallbackCmdRequest.ApprovalReply.Deny, chatIdToReview, chatDescription)),
+                    AuthorizeChatCallbackCmdRequest.BuildData(AuthorizeChatCallbackCmdRequest.ApprovalReply.Deny, chatIdToReview)),
             }
         );
 
@@ -160,12 +155,18 @@ internal class AuthorizeCmdHandler(ITelegramBotClient botClient, IChatAuthorizat
     {
         string approvalStatusLine;
 
-        (AuthorizeChatCallbackCmdRequest.ApprovalReply approvalReply, ChatId chatId, string? chatDescription) =
+        (AuthorizeChatCallbackCmdRequest.ApprovalReply approvalReply, ChatId chatId) =
             AuthorizeChatCallbackCmdRequest.ParseData(request.CallbackQuery.Data!);
+
+        var approvalRequest = await chatAuthorization.GetChatApprovalRequest(chatId);
+        if (approvalRequest == null)
+        {
+            throw new InvalidOperationException($"Approval request not found. Chat ID: {chatId}");
+        }
 
         if (approvalReply == AuthorizeChatCallbackCmdRequest.ApprovalReply.Allow)
         {
-            await chatAuthorization.AuthorizeChat(chatId, chatDescription);
+            await chatAuthorization.AuthorizeChat(chatId, approvalRequest.ChatDescription);
 
             await botClient.SendMessage(chatId, text: "Your bot usage was approved.\nPlease click here: /start", cancellationToken: cancellationToken);
 
@@ -184,7 +185,7 @@ internal class AuthorizeCmdHandler(ITelegramBotClient botClient, IChatAuthorizat
                                      {approvalStatusLine}
 
                                      Chat ID: {chatId}
-                                     Chat Info: {chatDescription}
+                                     Chat Info: {approvalRequest.ChatDescription}
                                      """;
             await botClient.EditMessageText(chatId: approveMsg.Chat, messageId: approveMsg.MessageId, text: approvalStatusMsg, cancellationToken: cancellationToken);
         }
