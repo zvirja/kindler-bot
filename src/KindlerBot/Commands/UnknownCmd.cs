@@ -31,7 +31,7 @@ internal class UnknownCmdHandler : IRequestHandler<UnknownCmdRequest>
                 _ => $@"¯\_(ツ)_/¯ Unknown command. Update type: {update.Type:G}"
             };
 
-            await _botClient.SendTextMessageAsync(chatId, message, cancellationToken: cancellationToken);
+            await _botClient.SendMessage(chatId, message, cancellationToken: cancellationToken);
         }
     }
 }

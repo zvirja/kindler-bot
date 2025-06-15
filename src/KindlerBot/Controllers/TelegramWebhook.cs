@@ -56,7 +56,7 @@ public class TelegramWebhook : Controller
             _logger.LogError(ex, "Failed to handle Telegram Update");
             if (update.TryGetChatId() is { } chatId)
             {
-                await botClient.SendTextMessageAsync(chatId, $"❌ Failed to handle update: {ex.Message}");
+                await botClient.SendMessage(chatId, $"❌ Failed to handle update: {ex.Message}");
             }
         }
 

@@ -32,7 +32,7 @@ internal class ConfigureCmdHandler: IRequestHandler<ConfigureCmdRequest>, IReque
     {
         string chatEmail = await _configManager.GetChatEmail(request.Chat) ?? "<unconfigured>";
         var config = $"🛠 Configuration\nEmail: {chatEmail}";
-        await _botClient.SendTextMessageAsync(request.Chat, config, cancellationToken: cancellationToken);
+        await _botClient.SendMessage(request.Chat, config, cancellationToken: cancellationToken);
     }
 
     public Task Handle(ConfigureCmdRequest request, CancellationToken cancellationToken)
@@ -47,23 +47,23 @@ internal class ConfigureCmdHandler: IRequestHandler<ConfigureCmdRequest>, IReque
     {
         try
         {
-            await _botClient.SendTextMessageAsync(chat, "Please enter your @kindle.com address");
+            await _botClient.SendMessage(chat, "Please enter your @kindle.com address");
 
             var mailReply = await _interactionManager.AwaitNextUpdate(chat);
             var mailAddress = mailReply.TryGetTextMessage();
             if (mailAddress == null || !mailAddress.Contains("@"))
             {
-                await _botClient.SendTextMessageAsync(chat, $"⚠ Wrong email address: {mailAddress}");
+                await _botClient.SendMessage(chat, $"⚠ Wrong email address: {mailAddress}");
                 return;
             }
 
             await _configManager.SetChatEmail(chat.Id, mailAddress);
-            await _botClient.SendTextMessageAsync(chat, $"✅ Successfully set email: {mailAddress}");
+            await _botClient.SendMessage(chat, $"✅ Successfully set email: {mailAddress}");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to configure chat {id} ({first name}{last name})", chat.Id, chat.FirstName, chat.LastName);
-            await _botClient.SendTextMessageAsync(chat, $"⚠ Failed to configure: {ex.Message}");
+            await _botClient.SendMessage(chat, $"⚠ Failed to configure: {ex.Message}");
         }
     }
 }

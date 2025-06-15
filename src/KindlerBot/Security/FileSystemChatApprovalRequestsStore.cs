@@ -1,16 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using KindlerBot.Configuration;
 using KindlerBot.IO;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using Telegram.Bot.Types;
-using File = System.IO.File;
 
 namespace KindlerBot.Security;
 

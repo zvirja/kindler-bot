@@ -111,7 +111,7 @@ internal class AuthorizeCmdHandler(ITelegramBotClient botClient, IChatAuthorizat
             }
         }
 
-        await botClient.SendTextMessageAsync(request.AdminChatId, replyBuilder.ToString(), cancellationToken: cancellationToken);
+        await botClient.SendMessage(request.AdminChatId, replyBuilder.ToString(), cancellationToken: cancellationToken);
     }
 
     public async Task Handle(AuthorizeReviewCmdRequest request, CancellationToken cancellationToken)
@@ -153,7 +153,7 @@ internal class AuthorizeCmdHandler(ITelegramBotClient botClient, IChatAuthorizat
             }
         );
 
-        await botClient.SendTextMessageAsync(adminChatId, approvalMsg, replyMarkup: replyMarkup, cancellationToken: cancellationToken);
+        await botClient.SendMessage(adminChatId, approvalMsg, replyMarkup: replyMarkup, cancellationToken: cancellationToken);
     }
 
     public async Task Handle(AuthorizeChatCallbackCmdRequest request, CancellationToken cancellationToken)
@@ -167,7 +167,7 @@ internal class AuthorizeCmdHandler(ITelegramBotClient botClient, IChatAuthorizat
         {
             await chatAuthorization.AuthorizeChat(chatId, chatDescription);
 
-            await botClient.SendTextMessageAsync(chatId, text: "Your bot usage was approved.\nPlease click here: /start", cancellationToken: cancellationToken);
+            await botClient.SendMessage(chatId, text: "Your bot usage was approved.\nPlease click here: /start", cancellationToken: cancellationToken);
 
             approvalStatusLine = "✅ Allowed to use bot!";
         }
@@ -186,9 +186,9 @@ internal class AuthorizeCmdHandler(ITelegramBotClient botClient, IChatAuthorizat
                                      Chat ID: {chatId}
                                      Chat Info: {chatDescription}
                                      """;
-            await botClient.EditMessageTextAsync(chatId: approveMsg.Chat, messageId: approveMsg.MessageId, text: approvalStatusMsg, cancellationToken: cancellationToken);
+            await botClient.EditMessageText(chatId: approveMsg.Chat, messageId: approveMsg.MessageId, text: approvalStatusMsg, cancellationToken: cancellationToken);
         }
 
-        await botClient.AnswerCallbackQueryAsync(request.CallbackQuery.Id, cancellationToken: cancellationToken);
+        await botClient.AnswerCallbackQuery(request.CallbackQuery.Id, cancellationToken: cancellationToken);
     }
 }

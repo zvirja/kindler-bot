@@ -30,14 +30,14 @@ internal class WebhookConfiguration: IHostedService
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         Uri url = new(_deploymentConfig.PublicUrl, $"webhook/{_botConfig.WebhookUrlSecret}");
-        await _telegramBotClient.SetWebhookAsync(url.ToString(), cancellationToken: cancellationToken);
+        await _telegramBotClient.SetWebhook(url.ToString(), cancellationToken: cancellationToken);
 
         _logger.LogInformation("Registered webhook url: {url}", url);
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        await _telegramBotClient.DeleteWebhookAsync(cancellationToken: cancellationToken);
+        await _telegramBotClient.DeleteWebhook(cancellationToken: cancellationToken);
         _logger.LogInformation("Unregistered webhook url");
     }
 }

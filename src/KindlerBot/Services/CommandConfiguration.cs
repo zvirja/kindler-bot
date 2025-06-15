@@ -24,7 +24,7 @@ public class CommandConfiguration : IHostedService
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         var botCommands = _commands.AvailableCommands.ToArray();
-        await _botClient.SetMyCommandsAsync(botCommands, cancellationToken: cancellationToken);
+        await _botClient.SetMyCommands(botCommands, cancellationToken: cancellationToken);
         _logger.LogInformation("Configured {count} commands", botCommands.Length);
     }
 

@@ -33,6 +33,6 @@ internal class HelpCmdHandler : IRequestHandler<HelpCmdRequest>
                    To find your Kindle email settings, visit the [Manage Your Content and Devices -> Preferences](https://www.amazon.com/hz/mycd/myx#/home/settings/pdoc) and navigate to *Personal Document Settings* section at the bottom.
                    """;
 
-        await _botClient.SendTextMessageAsync(request.Chat.Id, msg, parseMode: ParseMode.Markdown, cancellationToken: cancellationToken);
+        await _botClient.SendMessage(request.Chat.Id, msg, parseMode: ParseMode.Markdown, cancellationToken: cancellationToken);
     }
 }

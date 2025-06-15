@@ -62,7 +62,7 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
         var email = await _configStore.GetChatEmail(request.Chat.Id);
         if (email == null)
         {
-            await _botClient.SendTextMessageAsync(request.Chat, "❌ Email is not configured. Fix it and try again!", cancellationToken: cancellationToken);
+            await _botClient.SendMessage(request.Chat, "❌ Email is not configured. Fix it and try again!", cancellationToken: cancellationToken);
             return;
         }
 
@@ -80,24 +80,24 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
                 tempDir.SuppressCleanup();
             }
 
-            await _botClient.SendTextMessageAsync(chat, "⏬ Downloading file...");
-            var fileInfo = await _botClient.GetFileAsync(doc.FileId);
+            await _botClient.SendMessage(chat, "⏬ Downloading file...");
+            var fileInfo = await _botClient.GetFile(doc.FileId);
 
             var sourceFilePath = Path.Join(tempDir.DirPath, doc.FileName);
             await using (var sourceFileStream = System.IO.File.Create(sourceFilePath))
             {
-                await _botClient.DownloadFileAsync(fileInfo.FilePath!, sourceFileStream);
+                await _botClient.DownloadFile(fileInfo.FilePath!, sourceFileStream);
             }
-            await _botClient.SendTextMessageAsync(chat, "✅ Downloaded!");
+            await _botClient.SendMessage(chat, "✅ Downloaded!");
 
             var bookInfo = await _calibreCli.GetBookInfo(sourceFilePath);
             if (bookInfo.IsSuccessful)
             {
-                await _botClient.SendTextMessageAsync(chat, $"📖 Book info\nTitle: {bookInfo.Value.Title}\nAuthor: {bookInfo.Value.Author}");
+                await _botClient.SendMessage(chat, $"📖 Book info\nTitle: {bookInfo.Value.Title}\nAuthor: {bookInfo.Value.Author}");
             }
             else
             {
-                await _botClient.SendTextMessageAsync(chat, $"⚠ Unable to get book metadata from the file you sent. Error: {bookInfo.Error}");
+                await _botClient.SendMessage(chat, $"⚠ Unable to get book metadata from the file you sent. Error: {bookInfo.Error}");
             }
 
             var bookCoverPath = sourceFilePath + ".cover.jpg";
@@ -105,7 +105,7 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
             if (hasCover.IsSuccessful)
             {
                 await using var coverFileStream = System.IO.File.OpenRead(bookCoverPath);
-                await _botClient.SendPhotoAsync(chat, new InputFileStream(coverFileStream, Path.GetFileName(bookCoverPath)));
+                await _botClient.SendPhoto(chat, new InputFileStream(coverFileStream, Path.GetFileName(bookCoverPath)));
             }
 
             string convertedFilePath;
@@ -114,35 +114,35 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
             {
                 convertedFilePath = sourceFilePath;
                 convertedBook = false;
-                await _botClient.SendTextMessageAsync(chat, $"ℹ Conversion skipped for {Path.GetExtension(doc.FileName)}");
+                await _botClient.SendMessage(chat, $"ℹ Conversion skipped for {Path.GetExtension(doc.FileName)}");
             }
             else
             {
-                await _botClient.SendTextMessageAsync(chat, "🔃 Converting book...");
+                await _botClient.SendMessage(chat, "🔃 Converting book...");
 
                 convertedFilePath = sourceFilePath + ".epub";
                 convertedBook = true;
                 var conversionResult = await _calibreCli.ConvertBook(sourceFilePath, convertedFilePath);
                 if (conversionResult.IsSuccessful)
                 {
-                    await _botClient.SendTextMessageAsync(chat, $"✔ Converted to KINDLE (.epub) format!");
+                    await _botClient.SendMessage(chat, $"✔ Converted to KINDLE (.epub) format!");
                 }
                 else
                 {
-                    await _botClient.SendTextMessageAsync(chat, $"😢 Conversion failed. Error: {conversionResult.Error}");
+                    await _botClient.SendMessage(chat, $"😢 Conversion failed. Error: {conversionResult.Error}");
                     return;
                 }
             }
 
-            await _botClient.SendTextMessageAsync(chat, $"💌 Sending to your Kindle device...");
+            await _botClient.SendMessage(chat, $"💌 Sending to your Kindle device...");
             var sendResult = await _calibreCli.SendBookToEmail(convertedFilePath, email);
             if (!sendResult.IsSuccessful)
             {
-                await _botClient.SendTextMessageAsync(chat, $"😢 Failed to send to Kindle. Error: {sendResult.Error}", disableWebPagePreview: true);
+                await _botClient.SendMessage(chat, $"😢 Failed to send to Kindle. Error: {sendResult.Error}", linkPreviewOptions: new LinkPreviewOptions() { IsDisabled = true });
                 return;
             }
 
-            await _botClient.SendTextMessageAsync(chat, $"🎉 Successfully sent your book!");
+            await _botClient.SendMessage(chat, $"🎉 Successfully sent your book!");
 
             _logger.LogInformation(
                 convertedBook ? "Converted and sent book. Book name: {book}, User: {user}" : "Sent book without conversion. Book name: {book}, User: {user}",
@@ -151,7 +151,7 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
         catch (Exception ex)
         {
             _logger.LogError(ex, "Book conversion failed");
-            await _botClient.SendTextMessageAsync(chat, $"❌ Unexpected bot error when converting and sending book: {ex.Message}");
+            await _botClient.SendMessage(chat, $"❌ Unexpected bot error when converting and sending book: {ex.Message}");
         }
     }
 
