@@ -114,17 +114,7 @@ internal class AuthorizeCmdHandler(ITelegramBotClient botClient, IChatAuthorizat
         var chatIdToReview = AuthorizeReviewCmdRequest.ParseData(request.CmdText);
         var adminChatId = request.AdminChatId;
 
-        string? chatDescription = null;
-
-        // Try getting description from either approval or already approved chat
-        if (await chatAuthorization.GetChatApprovalRequest(chatIdToReview) is { } pendingApproval)
-        {
-            chatDescription = pendingApproval.ChatDescription;
-        }
-        else if ((await chatAuthorization.GetAllAllowedChats()).FirstOrDefault(x => x.ChatId == chatIdToReview) is { } approvedChat)
-        {
-            chatDescription = approvedChat.ChatDescription;
-        }
+        string? chatDescription = await TryResolveChatDescription(chatIdToReview);
 
         bool isAuthorized = await chatAuthorization.IsAuthorized(chatIdToReview);
 
@@ -137,15 +127,12 @@ internal class AuthorizeCmdHandler(ITelegramBotClient botClient, IChatAuthorizat
                            """;
 
         var replyMarkup = new InlineKeyboardMarkup(
-            new[]
-            {
-                InlineKeyboardButton.WithCallbackData(
-                    "Allow",
-                    AuthorizeChatCallbackCmdRequest.BuildData(AuthorizeChatCallbackCmdRequest.ApprovalReply.Allow, chatIdToReview)),
-                InlineKeyboardButton.WithCallbackData(
-                    "Deny",
-                    AuthorizeChatCallbackCmdRequest.BuildData(AuthorizeChatCallbackCmdRequest.ApprovalReply.Deny, chatIdToReview)),
-            }
+            InlineKeyboardButton.WithCallbackData(
+                "Allow",
+                AuthorizeChatCallbackCmdRequest.BuildData(AuthorizeChatCallbackCmdRequest.ApprovalReply.Allow, chatIdToReview)),
+            InlineKeyboardButton.WithCallbackData(
+                "Deny",
+                AuthorizeChatCallbackCmdRequest.BuildData(AuthorizeChatCallbackCmdRequest.ApprovalReply.Deny, chatIdToReview))
         );
 
         await botClient.SendMessage(adminChatId, approvalMsg, replyMarkup: replyMarkup, cancellationToken: cancellationToken);
@@ -155,18 +142,13 @@ internal class AuthorizeCmdHandler(ITelegramBotClient botClient, IChatAuthorizat
     {
         string approvalStatusLine;
 
-        (AuthorizeChatCallbackCmdRequest.ApprovalReply approvalReply, ChatId chatId) =
-            AuthorizeChatCallbackCmdRequest.ParseData(request.CallbackQuery.Data!);
+        (AuthorizeChatCallbackCmdRequest.ApprovalReply approvalReply, ChatId chatId) = AuthorizeChatCallbackCmdRequest.ParseData(request.CallbackQuery.Data!);
 
-        var approvalRequest = await chatAuthorization.GetChatApprovalRequest(chatId);
-        if (approvalRequest == null)
-        {
-            throw new InvalidOperationException($"Approval request not found. Chat ID: {chatId}");
-        }
+        var chatDescription = await TryResolveChatDescription(chatId);
 
         if (approvalReply == AuthorizeChatCallbackCmdRequest.ApprovalReply.Allow)
         {
-            await chatAuthorization.AuthorizeChat(chatId, approvalRequest.ChatDescription);
+            await chatAuthorization.AuthorizeChat(chatId, chatDescription);
 
             await botClient.SendMessage(chatId, text: "Your bot usage was approved.\nPlease click here: /start", cancellationToken: cancellationToken);
 
@@ -185,11 +167,27 @@ internal class AuthorizeCmdHandler(ITelegramBotClient botClient, IChatAuthorizat
                                      {approvalStatusLine}
 
                                      Chat ID: {chatId}
-                                     Chat Info: {approvalRequest.ChatDescription}
+                                     Chat Info: {chatDescription}
                                      """;
             await botClient.EditMessageText(chatId: approveMsg.Chat, messageId: approveMsg.MessageId, text: approvalStatusMsg, cancellationToken: cancellationToken);
         }
 
         await botClient.AnswerCallbackQuery(request.CallbackQuery.Id, cancellationToken: cancellationToken);
+    }
+
+    private async Task<string?> TryResolveChatDescription(ChatId chatIdToReview)
+    {
+        // Try getting description from either approval or already approved chat
+        if (await chatAuthorization.GetChatApprovalRequest(chatIdToReview) is { } pendingApproval)
+        {
+            return pendingApproval.ChatDescription;
+        }
+
+        if ((await chatAuthorization.GetAllAllowedChats()).FirstOrDefault(x => x.ChatId == chatIdToReview) is { } approvedChat)
+        {
+            return approvedChat.ChatDescription;
+        }
+
+        return null;
     }
 }
