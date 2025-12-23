@@ -24,10 +24,10 @@
     "ExecutableTarget": {
       "type": "string",
       "enum": [
-        "AppVeyor_DescribeState",
-        "AppVeyor_Pipeline",
         "BuildDocker",
         "CalculateVersion",
+        "CI_DescribeState",
+        "CI_Pipeline",
         "Clean",
         "CleanDockerBuilder",
         "Compile",

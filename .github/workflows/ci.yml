@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Log in to Custom Registry
+      uses: docker/login-action@v3
+      with:
+        registry: docker.zvirja.com
+        username: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
+        password: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
+
+    - name: Enable build
+      run: chmod +x ./build.sh
+
+    - name: Run build
+      run: >
+        ./build.sh --target CI_Pipeline --build-version git  --build-number $GITHUB_RUN_NUMBER --no-logo

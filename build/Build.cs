@@ -4,11 +4,13 @@ using System.Text.RegularExpressions;
 using Nuke.Common;
 using Nuke.Common.CI;
 using Nuke.Common.CI.AppVeyor;
+using Nuke.Common.CI.GitHubActions;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tools.Docker;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Utilities.Collections;
+using Serilog;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.Docker.DockerTasks;
 using static Serilog.Log;
@@ -161,45 +163,37 @@ class Build : NukeBuild
         .DependsOn(BuildDocker);
 
     // ==============================================
-    // ================== AppVeyor ==================
+    // ===================== CI =====================
     // ==============================================
 
-    static AppVeyor AppVeyorEnv => AppVeyor.Instance ?? throw new InvalidOperationException("Is not AppVeyor CI");
+    Target CI_DescribeState => _ => _
+      .Before(Prepare)
+      .Executes(() =>
+      {
+        var env = GitHubActions.Instance ?? throw new InvalidOperationException("Is not GitHub Actions CI");
+        var trigger = ResolveCITrigger();
+        Log.Information($"Build type: {env.RefType}, Ref name: '{env.RefName}', Is PR: {env.IsPullRequest}, trigger: {trigger}");
+      });
 
-    Target AppVeyor_DescribeState => _ => _
-        .Before(Prepare)
+    Target CI_Pipeline => _ => _
+        .DependsOn(ResolveCITarget(this), CI_DescribeState)
         .Executes(() =>
         {
-            var env = AppVeyorEnv;
-            var trigger = ResolveAppVeyorTrigger();
-            Information($"Is tag: {env.RepositoryTag}, tag name: '{env.RepositoryTagName}', PR number: {env.PullRequestNumber?.ToString() ?? "<null>"}, branch name: '{env.RepositoryBranch}', trigger: {trigger}");
         });
 
-    Target AppVeyor_Pipeline => _ => _
-        .DependsOn(ResolveAppVeyorTarget(this), AppVeyor_DescribeState)
-        .Executes(() =>
-        {
-            var trigger = ResolveAppVeyorTrigger();
-            if (trigger != AppVeyorTrigger.PR)
-            {
-                AppVeyorEnv.UpdateBuildVersion(CurrentBuildVersion.FileVersion);
-                Information($"Updated build version to: '{CurrentBuildVersion.FileVersion}'");
-            }
-        });
-
-    static Target ResolveAppVeyorTarget(Build build)
+    static Target ResolveCITarget(Build build)
     {
-        var trigger = ResolveAppVeyorTrigger();
+        var trigger = ResolveCITrigger();
         return trigger switch
         {
-            AppVeyorTrigger.SemVerTag  => build.PushDocker,
-            AppVeyorTrigger.MainBranch => build.PushDocker,
-            AppVeyorTrigger.PR         => build.BuildDocker,
+            CITrigger.SemVerTag        => build.PushDocker,
+            CITrigger.MainBranch       => build.PushDocker,
+            CITrigger.PR               => build.BuildDocker,
             _                          => build.BuildDocker
         };
     }
 
-    enum AppVeyorTrigger
+    enum CITrigger
     {
         Invalid,
         SemVerTag,
@@ -208,24 +202,24 @@ class Build : NukeBuild
         UnknownBranchOrTag
     }
 
-    static AppVeyorTrigger ResolveAppVeyorTrigger()
+    static CITrigger ResolveCITrigger()
     {
-        var env = AppVeyor.Instance;
+        var env = GitHubActions.Instance;
         if (env == null)
         {
-            return AppVeyorTrigger.Invalid;
+            return CITrigger.Invalid;
         }
 
-        var tag = env.RepositoryTag ? env.RepositoryTagName : null;
-        var isPr = env.PullRequestNumber != null;
-        var branchName = env.RepositoryBranch;
+        var tag = env.RefType == "tag" ? env.RefName : null;
+        var isPr = env.IsPullRequest;
+        var branchName = env.RefName;
 
         return (tag, isPr, branchName) switch
         {
-            ({ } t, _, _) when Regex.IsMatch(t, "^v\\d.*") => AppVeyorTrigger.SemVerTag,
-            (_, true, _)                                   => AppVeyorTrigger.PR,
-            (_, _, "main")                                 => AppVeyorTrigger.MainBranch,
-            _                                              => AppVeyorTrigger.UnknownBranchOrTag
+            (tag: { } t, _, _) when Regex.IsMatch(t, "^v\\d.*") => CITrigger.SemVerTag,
+            (_, isPr: true, _)                                  => CITrigger.PR,
+            (_, _, branchName: "main")                          => CITrigger.MainBranch,
+            _                                                   => CITrigger.UnknownBranchOrTag
         };
     }
 }
