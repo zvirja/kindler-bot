@@ -176,10 +176,7 @@ class Build : NukeBuild
       });
 
     Target CI_Pipeline => _ => _
-        .DependsOn(ResolveCITarget(this), CI_DescribeState)
-        .Executes(() =>
-        {
-        });
+        .DependsOn(ResolveCITarget(this), CI_DescribeState);
 
     static Target ResolveCITarget(Build build)
     {
