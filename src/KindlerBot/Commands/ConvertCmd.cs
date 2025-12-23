@@ -94,6 +94,22 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
             if (bookInfo.IsSuccessful)
             {
                 await _botClient.SendMessage(chat, $"📖 Book info\nTitle: {bookInfo.Value.Title}\nAuthor: {bookInfo.Value.Author}");
+
+                var renamedFileName = $"{ReplaceInvalidPathChars(bookInfo.Value.Title)}{Path.GetExtension(sourceFilePath)}";
+                var renamedFilePath = Path.Join(tempDir.DirPath, renamedFileName);
+
+                if (!string.Equals(sourceFilePath, renamedFilePath, StringComparison.Ordinal))
+                {
+                    File.Copy(sourceFilePath, renamedFilePath);
+                    sourceFilePath = renamedFilePath;
+
+                    await _botClient.SendMessage(chat, $"📝 Renamed to: {renamedFileName}");
+                }
+
+                static string ReplaceInvalidPathChars(string filename)
+                {
+                    return string.Join("_", filename.Split(Path.GetInvalidFileNameChars()));
+                }
             }
             else
             {
