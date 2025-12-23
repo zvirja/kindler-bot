@@ -103,7 +103,7 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
                     File.Copy(sourceFilePath, renamedFilePath);
                     sourceFilePath = renamedFilePath;
 
-                    await _botClient.SendMessage(chat, $"📝 Renamed to: {renamedFileName}");
+                    await _botClient.SendMessage(chat, $"✏️ Renamed: {renamedFileName}");
                 }
 
                 static string ReplaceInvalidPathChars(string filename)
