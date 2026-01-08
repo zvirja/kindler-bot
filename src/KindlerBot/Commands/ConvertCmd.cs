@@ -93,17 +93,22 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
             var bookInfo = await _calibreCli.GetBookInfo(sourceFilePath);
             if (bookInfo.IsSuccessful)
             {
-                await _botClient.SendMessage(chat, $"📖 Book info\nTitle: {bookInfo.Value.Title}\nAuthor: {bookInfo.Value.Author}");
+                var bookTitle = bookInfo.Value.Title;
+                await _botClient.SendMessage(chat, $"📖 Book info\nTitle: {bookTitle}\nAuthor: {bookInfo.Value.Author}");
 
-                var renamedFileName = $"{ReplaceInvalidPathChars(bookInfo.Value.Title)}{Path.GetExtension(sourceFilePath)}";
-                var renamedFilePath = Path.Join(tempDir.DirPath, renamedFileName);
-
-                if (!string.Equals(sourceFilePath, renamedFilePath, StringComparison.Ordinal))
+                if (!sourceFilePath.Contains(bookTitle, StringComparison.OrdinalIgnoreCase) &&
+                    !sourceFilePath.Contains(ReplaceInvalidPathChars(bookTitle), StringComparison.OrdinalIgnoreCase))
                 {
-                    File.Copy(sourceFilePath, renamedFilePath);
-                    sourceFilePath = renamedFilePath;
+                    var renamedFileName = $"{ReplaceInvalidPathChars(bookTitle)}{Path.GetExtension(sourceFilePath)}";
+                    var renamedFilePath = Path.Join(tempDir.DirPath, renamedFileName);
 
-                    await _botClient.SendMessage(chat, $"✏️ Renamed: {renamedFileName}");
+                    if (!string.Equals(sourceFilePath, renamedFilePath, StringComparison.Ordinal))
+                    {
+                        File.Copy(sourceFilePath, renamedFilePath);
+                        sourceFilePath = renamedFilePath;
+
+                        await _botClient.SendMessage(chat, $"✏️ Renamed: {renamedFileName}");
+                    }
                 }
 
                 static string ReplaceInvalidPathChars(string filename)
