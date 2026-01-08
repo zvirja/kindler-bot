@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Security.Policy;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using KindlerBot.Configuration;
@@ -84,7 +84,7 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
             var fileInfo = await _botClient.GetFile(doc.FileId);
 
             var sourceFilePath = Path.Join(tempDir.DirPath, doc.FileName);
-            await using (var sourceFileStream = System.IO.File.Create(sourceFilePath))
+            await using (var sourceFileStream = File.Create(sourceFilePath))
             {
                 await _botClient.DownloadFile(fileInfo.FilePath!, sourceFileStream);
             }
@@ -94,26 +94,24 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
             if (bookInfo.IsSuccessful)
             {
                 var bookTitle = bookInfo.Value.Title;
-                await _botClient.SendMessage(chat, $"📖 Book info\nTitle: {bookTitle}\nAuthor: {bookInfo.Value.Author}");
+                var bookAuthor = Regex.Replace(bookInfo.Value.Author, @"\[.*\]$", "").Trim();
 
-                if (!sourceFilePath.Contains(bookTitle, StringComparison.OrdinalIgnoreCase) &&
-                    !sourceFilePath.Contains(ReplaceInvalidPathChars(bookTitle), StringComparison.OrdinalIgnoreCase))
+                await _botClient.SendMessage(chat, $"📖 Book info\nTitle: {bookTitle}\nAuthor: {bookAuthor}");
+
+                var renamedFileName = $"{bookTitle} - {bookAuthor}{Path.GetExtension(sourceFilePath)}";
+                var renamedFilePath = Path.Join(tempDir.DirPath, ReplaceInvalidPathChars(renamedFileName));
+
+                if (!string.Equals(sourceFilePath, renamedFilePath, StringComparison.Ordinal))
                 {
-                    var renamedFileName = $"{ReplaceInvalidPathChars(bookTitle)}{Path.GetExtension(sourceFilePath)}";
-                    var renamedFilePath = Path.Join(tempDir.DirPath, renamedFileName);
+                    File.Copy(sourceFilePath, renamedFilePath);
+                    sourceFilePath = renamedFilePath;
 
-                    if (!string.Equals(sourceFilePath, renamedFilePath, StringComparison.Ordinal))
-                    {
-                        File.Copy(sourceFilePath, renamedFilePath);
-                        sourceFilePath = renamedFilePath;
-
-                        await _botClient.SendMessage(chat, $"✏️ Renamed: {renamedFileName}");
-                    }
+                    // await _botClient.SendMessage(chat, $"✏️ Renamed: {renamedFileName}");
                 }
 
                 static string ReplaceInvalidPathChars(string filename)
                 {
-                    return string.Join("_", filename.Split(Path.GetInvalidFileNameChars()));
+                    return string.Join("", filename.Split(Path.GetInvalidFileNameChars()));
                 }
             }
             else
