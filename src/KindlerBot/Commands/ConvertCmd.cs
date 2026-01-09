@@ -98,7 +98,7 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
 
                 await _botClient.SendMessage(chat, $"📖 Book info\nTitle: {bookTitle}\nAuthor: {bookAuthor}");
 
-                var renamedFileName = $"{bookTitle} - {bookAuthor}{Path.GetExtension(sourceFilePath)}";
+                var renamedFileName = $"{bookTitle}{Path.GetExtension(sourceFilePath)}";
                 var renamedFilePath = Path.Join(tempDir.DirPath, ReplaceInvalidPathChars(renamedFileName));
 
                 if (!string.Equals(sourceFilePath, renamedFilePath, StringComparison.Ordinal))
