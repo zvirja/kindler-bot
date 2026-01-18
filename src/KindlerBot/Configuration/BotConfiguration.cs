@@ -11,4 +11,6 @@ public class BotConfiguration
     public string? BotApiServer { get; set; }
 
     public string WebhookUrlSecret { get; set; }
+
+    public bool EnableChatAuthorization { get; set; } = true;
 }

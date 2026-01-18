@@ -98,7 +98,7 @@ internal class CalibreCli : ICalibreCli
                 "--password", Quote(_smtpConfiguration.Password),
                 _smtpConfiguration.FromEmail, // from
                 email, // to
-                fileName //text
+                Quote("Send to kindle") // text
             });
 
         var error = output.LastOrDefault(x => x.Contains("Error"))?.Split(':', 2)[^1];
@@ -118,5 +118,5 @@ internal class CalibreCli : ICalibreCli
 
     private static string? GetCalibreError(string[] output) => GetKeyedOutputValue("ValueError", output);
 
-    private static string Quote(string path) => $"\"{path}\"";
+    private static string Quote(string text) => $"\"{text}\"";
 }

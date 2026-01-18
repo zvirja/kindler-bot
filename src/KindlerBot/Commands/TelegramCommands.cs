@@ -80,7 +80,7 @@ internal class TelegramCommands : ITelegramCommands
 
         if (message.Type == MessageType.Document)
         {
-            await _mediator.Send(new ConvertCmdRequest(message.Document!, message.Chat), ct);
+            await _mediator.Send(new ConvertCmdRequest(message.Document!, message.Caption, message.Chat), ct);
             return;
         }
 

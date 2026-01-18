@@ -35,7 +35,7 @@ public class TelegramWebhook : Controller
             return NotFound();
         }
 
-        if (!await _chatAuthorization.IsAuthorized(update))
+        if (_botConfig.EnableChatAuthorization && !await _chatAuthorization.IsAuthorized(update))
         {
             _logger.LogWarning("Received message from non-authorized chat {chat id}", update.TryGetChatId());
             await _chatAuthorization.TrackUnauthorized(update);

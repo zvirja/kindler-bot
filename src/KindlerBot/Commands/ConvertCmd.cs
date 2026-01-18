@@ -14,7 +14,7 @@ using Telegram.Bot.Types;
 
 namespace KindlerBot.Commands;
 
-internal record ConvertCmdRequest(Document Doc, Chat Chat) : IRequest;
+internal record ConvertCmdRequest(Document Doc, string? Caption, Chat Chat) : IRequest;
 
 internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
 {
@@ -67,10 +67,10 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
         }
 
         // Start conversion in background as it could take long time.
-        _ = Task.Run(() => ConvertDocument(request.Doc, request.Chat, email), CancellationToken.None);
+        _ = Task.Run(() => ConvertDocument(request.Doc, request.Caption, request.Chat, email), CancellationToken.None);
     }
 
-    private async Task ConvertDocument(Document doc, Chat chat, string email)
+    private async Task ConvertDocument(Document doc, string? caption, Chat chat, string email)
     {
         try
         {
@@ -98,7 +98,8 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
 
                 await _botClient.SendMessage(chat, $"📖 Book info\nTitle: {bookTitle}\nAuthor: {bookAuthor}");
 
-                var renamedFileName = $"{bookTitle}{Path.GetExtension(sourceFilePath)}";
+                // If a caption was specified, use it as the book file name
+                var renamedFileName = $"{caption ?? bookTitle}{Path.GetExtension(sourceFilePath)}";
                 var renamedFilePath = Path.Join(tempDir.DirPath, ReplaceInvalidPathChars(renamedFileName));
 
                 if (!string.Equals(sourceFilePath, renamedFilePath, StringComparison.Ordinal))
