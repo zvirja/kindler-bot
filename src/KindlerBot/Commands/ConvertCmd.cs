@@ -10,7 +10,9 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
+using Telegram.Bot.Extensions;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace KindlerBot.Commands;
 
@@ -70,7 +72,7 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
         _ = Task.Run(() => ConvertDocument(request.Doc, request.Caption, request.Chat, email), CancellationToken.None);
     }
 
-    private async Task ConvertDocument(Document doc, string? caption, Chat chat, string email)
+    private async Task ConvertDocument(Document doc, string? docCaption, Chat chat, string email)
     {
         try
         {
@@ -81,33 +83,31 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
             }
 
             await _botClient.SendMessage(chat, "⏬ Downloading file...");
-            var fileInfo = await _botClient.GetFile(doc.FileId);
+            var docFileInfo = await _botClient.GetFile(doc.FileId);
 
-            var sourceFilePath = Path.Join(tempDir.DirPath, doc.FileName);
-            await using (var sourceFileStream = File.Create(sourceFilePath))
+            var filePath = Path.Join(tempDir.DirPath, doc.FileName);
+            await using (var fileStream = File.Create(filePath))
             {
-                await _botClient.DownloadFile(fileInfo.FilePath!, sourceFileStream);
+                await _botClient.DownloadFile(docFileInfo.FilePath!, fileStream);
             }
             await _botClient.SendMessage(chat, "✅ Downloaded!");
 
-            var bookInfo = await _calibreCli.GetBookInfo(sourceFilePath);
+            var bookInfo = await _calibreCli.GetBookInfo(filePath);
             if (bookInfo.IsSuccessful)
             {
                 var bookTitle = bookInfo.Value.Title;
                 var bookAuthor = Regex.Replace(bookInfo.Value.Author, @"\[.*\]$", "").Trim();
 
-                await _botClient.SendMessage(chat, $"📖 Book info\nTitle: {bookTitle}\nAuthor: {bookAuthor}");
-
                 // If a caption was specified, use it as the book file name
-                var renamedFileName = $"{caption ?? bookTitle}{Path.GetExtension(sourceFilePath)}";
-                var renamedFilePath = Path.Join(tempDir.DirPath, ReplaceInvalidPathChars(renamedFileName));
+                var newFileName = $"{docCaption ?? bookTitle}{Path.GetExtension(filePath)}";
+                var newFilePath = Path.Join(tempDir.DirPath, ReplaceInvalidPathChars(newFileName));
 
-                if (!string.Equals(sourceFilePath, renamedFilePath, StringComparison.Ordinal))
+                await _botClient.SendMessage(chat, $"📖 *{Markdown.Escape(newFileName)}*\nTitle: {Markdown.Escape(bookTitle)}\nAuthor: {Markdown.Escape(bookAuthor)}", ParseMode.MarkdownV2);
+
+                if (!string.Equals(filePath, newFilePath, StringComparison.Ordinal))
                 {
-                    File.Copy(sourceFilePath, renamedFilePath);
-                    sourceFilePath = renamedFilePath;
-
-                    // await _botClient.SendMessage(chat, $"✏️ Renamed: {renamedFileName}");
+                    File.Copy(filePath, newFilePath);
+                    filePath = newFilePath;
                 }
 
                 static string ReplaceInvalidPathChars(string filename)
@@ -120,11 +120,11 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
                 await _botClient.SendMessage(chat, $"⚠ Unable to get book metadata from the file you sent. Error: {bookInfo.Error}");
             }
 
-            var bookCoverPath = sourceFilePath + ".cover.jpg";
-            var hasCover = await _calibreCli.ExportCover(sourceFilePath, bookCoverPath);
+            var bookCoverPath = filePath + ".cover.jpg";
+            var hasCover = await _calibreCli.ExportCover(filePath, bookCoverPath);
             if (hasCover.IsSuccessful)
             {
-                await using var coverFileStream = System.IO.File.OpenRead(bookCoverPath);
+                await using var coverFileStream = File.OpenRead(bookCoverPath);
                 await _botClient.SendPhoto(chat, new InputFileStream(coverFileStream, Path.GetFileName(bookCoverPath)));
             }
 
@@ -132,7 +132,7 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
             bool convertedBook;
             if (KindleSupportedFormats.Contains(Path.GetExtension(doc.FileName!)))
             {
-                convertedFilePath = sourceFilePath;
+                convertedFilePath = filePath;
                 convertedBook = false;
                 await _botClient.SendMessage(chat, $"ℹ Conversion skipped for {Path.GetExtension(doc.FileName)}");
             }
@@ -140,9 +140,9 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
             {
                 await _botClient.SendMessage(chat, "🔃 Converting book...");
 
-                convertedFilePath = sourceFilePath + ".epub";
+                convertedFilePath = filePath + ".epub";
                 convertedBook = true;
-                var conversionResult = await _calibreCli.ConvertBook(sourceFilePath, convertedFilePath);
+                var conversionResult = await _calibreCli.ConvertBook(filePath, convertedFilePath);
                 if (conversionResult.IsSuccessful)
                 {
                     await _botClient.SendMessage(chat, $"✔ Converted to KINDLE (.epub) format!");
@@ -166,7 +166,7 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
 
             _logger.LogInformation(
                 convertedBook ? "Converted and sent book. Book name: {book}, User: {user}" : "Sent book without conversion. Book name: {book}, User: {user}",
-                doc.FileName, chat.Username);
+                Path.GetFileNameWithoutExtension(filePath), chat.Username);
         }
         catch (Exception ex)
         {
