@@ -24,7 +24,7 @@ internal class UpdateNotifier : IHostedService
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         var lastVersion = await _configStore.GetLastAppVersion();
-        var currentVersion = BotVersion.Current.FileVersion;
+        var currentVersion = BotVersion.Current.InfoVersion;
 
         if (currentVersion != lastVersion)
         {

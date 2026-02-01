@@ -21,7 +21,7 @@ internal interface IConfigStore
 
     public Task<ChatId?> GetAdminChatId();
 
-    public Task<Version?> GetLastAppVersion();
+    public Task<string?> GetLastAppVersion();
 
-    public Task SetLastAppVersion(Version version);
+    public Task SetLastAppVersion(string version);
 }

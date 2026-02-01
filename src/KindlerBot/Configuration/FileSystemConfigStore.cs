@@ -58,20 +58,17 @@ internal class FileSystemConfigStore : FileSystemStoreBase<FileSystemConfigStore
         return config.AdminChatId != null ? new ChatId(config.AdminChatId) : null;
     }
 
-    public async Task<Version?> GetLastAppVersion()
+    public async Task<string?> GetLastAppVersion()
     {
         var config = await GetStoreData();
-        if (config.LastVersion is { } lastVersion)
-            return Version.Parse(lastVersion);
-
-        return null;
+        return config.LastVersion;
     }
 
-    public async Task SetLastAppVersion(Version version)
+    public async Task SetLastAppVersion(string version)
     {
         await UpdateStoreData(config =>
         {
-            config.LastVersion = version.ToString();
+            config.LastVersion = version;
         });
     }
 
