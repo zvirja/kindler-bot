@@ -37,7 +37,7 @@ public static class GitBasedVersion
         var infoVersion = commitsNum switch
         {
             0 => nugetVersion,
-            _ => $"{nugetVersion}-{sha}"
+            _ => $"{nugetVersion} ({sha[..7]})"
         };
 
         return new BuildVersionInfo

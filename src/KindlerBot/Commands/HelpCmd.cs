@@ -25,7 +25,7 @@ internal class HelpCmdHandler : IRequestHandler<HelpCmdRequest>
     public async Task Handle(HelpCmdRequest request, CancellationToken cancellationToken)
     {
         var msg = $"""
-                   Kindler v{BotVersion.Current.AppVersion} ({BotVersion.Current.GitSha})
+                   Kindler v{BotVersion.Current.InfoVersion}
                    Send me a book file and I'll send it to your Kindle 🚀
 
                    Make sure to add {_smtpConfig.FromEmail} to your list of allowed senders on Amazon website.

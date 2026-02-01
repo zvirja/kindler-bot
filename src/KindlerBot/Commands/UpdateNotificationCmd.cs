@@ -32,7 +32,7 @@ internal class UpdateNotificationHandler : INotificationHandler<UpdateNotificati
             return;
         }
 
-        var msg = $"🎈 Updated to v{notification.NewVersion.AppVersion} ({notification.NewVersion.GitSha})";
+        var msg = $"🎈 Updated to v{notification.NewVersion.InfoVersion}";
         await _botClient.SendMessage(adminChatId, msg, cancellationToken: cancellationToken);
     }
 }
