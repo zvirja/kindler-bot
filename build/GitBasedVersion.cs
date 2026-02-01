@@ -34,17 +34,11 @@ public static class GitBasedVersion
             var num => $"{major}.{minor}.{revision}{optPreReleaseSuffix}.{num}",
         };
 
-        var infoVersion = commitsNum switch
-        {
-            0 => nugetVersion,
-            _ => $"{nugetVersion} ({sha[..7]})"
-        };
-
         return new BuildVersionInfo
         {
             AssemblyVersion = assemblyVersion,
             FileVersion = fileVersion,
-            InfoVersion = infoVersion,
+            InfoVersion = nugetVersion,
             NuGetVersion = nugetVersion,
             GitSha = sha
         };
