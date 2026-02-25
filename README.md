@@ -1,3 +1,3 @@
 # Kindler Bot
 
-Telegram Bot to convert and send books to Kindle
+Telegram Bot to convert and send books to Kindle.
