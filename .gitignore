@@ -11,3 +11,4 @@ artifacts/
 /.vs
 /src/.vs
 *.user
+/.vscode
