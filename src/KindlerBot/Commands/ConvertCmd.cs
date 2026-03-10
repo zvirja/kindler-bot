@@ -83,6 +83,7 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
             }
 
             var bookInfoMsg = await _botClient.SendMessage(chat, "⏬ Downloading file...");
+            await _botClient.SendChatAction(chat, ChatAction.Typing);
             var docFileInfo = await _botClient.GetFile(doc.FileId);
 
             var filePath = Path.Join(tempDir.DirPath, doc.FileName);
@@ -92,6 +93,7 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
             }
 
             await _botClient.EditMessageText(chat, bookInfoMsg.Id, "✅ Downloaded file!");
+            await _botClient.SendChatAction(chat, ChatAction.Typing);
 
             var bookInfo = await _calibreCli.GetBookInfo(filePath);
             if (bookInfo.IsSuccessful)
@@ -102,8 +104,6 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
                 // If a caption was specified, use it as the book file name
                 var newFileName = $"{docCaption ?? bookTitle}{Path.GetExtension(filePath)}";
                 var newFilePath = Path.Join(tempDir.DirPath, ReplaceInvalidPathChars(newFileName));
-
-
 
                 await _botClient.EditMessageText(chat, bookInfoMsg.Id, $"📖 *{Markdown.Escape(newFileName)}*\nTitle: {Markdown.Escape(bookTitle)}\nAuthor: {Markdown.Escape(bookAuthor)}", ParseMode.MarkdownV2);
 
@@ -141,23 +141,25 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
             }
             else
             {
-                await _botClient.SendMessage(chat, "🔃 Converting book...");
+                var convertingMsg = await _botClient.SendMessage(chat, "🔃 Converting book...");
+                await _botClient.SendChatAction(chat, ChatAction.Typing);
 
                 convertedFilePath = filePath + ".epub";
                 convertedBook = true;
                 var conversionResult = await _calibreCli.ConvertBook(filePath, convertedFilePath);
                 if (conversionResult.IsSuccessful)
                 {
-                    await _botClient.SendMessage(chat, $"✔ Converted to KINDLE (.epub) format!");
+                    await _botClient.EditMessageText(chat, convertingMsg.Id, $"✔ Converted to KINDLE (.epub) format!");
                 }
                 else
                 {
-                    await _botClient.SendMessage(chat, $"😢 Conversion failed. Error: {conversionResult.Error}");
+                    await _botClient.EditMessageText(chat, convertingMsg.Id, $"😢 Conversion failed. Error: {conversionResult.Error}");
                     return;
                 }
             }
 
             var sendMsg = await _botClient.SendMessage(chat, $"✉️ Sending to your Kindle device...");
+            await _botClient.SendChatAction(chat, ChatAction.Typing);
             var sendResult = await _calibreCli.SendBookToEmail(convertedFilePath, email);
             if (!sendResult.IsSuccessful)
             {
