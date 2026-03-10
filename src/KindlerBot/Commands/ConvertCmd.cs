@@ -90,7 +90,7 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
             {
                 await _botClient.DownloadFile(docFileInfo.FilePath!, fileStream);
             }
-            await _botClient.SendMessage(chat, "✅ Downloaded!");
+            // await _botClient.SendMessage(chat, "✅ Downloaded!");
 
             var bookInfo = await _calibreCli.GetBookInfo(filePath);
             if (bookInfo.IsSuccessful)
@@ -134,7 +134,7 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
             {
                 convertedFilePath = filePath;
                 convertedBook = false;
-                await _botClient.SendMessage(chat, $"ℹ Conversion skipped for {Path.GetExtension(doc.FileName)}");
+                // await _botClient.SendMessage(chat, $"ℹ Conversion skipped for {Path.GetExtension(doc.FileName)}");
             }
             else
             {
@@ -154,15 +154,15 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
                 }
             }
 
-            await _botClient.SendMessage(chat, $"💌 Sending to your Kindle device...");
+            await _botClient.SendMessage(chat, $"✉️ Sending to your Kindle device...");
             var sendResult = await _calibreCli.SendBookToEmail(convertedFilePath, email);
             if (!sendResult.IsSuccessful)
             {
                 await _botClient.SendMessage(chat, $"😢 Failed to send to Kindle. Error: {sendResult.Error}", linkPreviewOptions: new LinkPreviewOptions() { IsDisabled = true });
                 return;
             }
-
-            await _botClient.SendMessage(chat, $"🎉 Successfully sent your book!");
+            
+            await _botClient.SendMessage(chat, $"💌 Successfully sent your book!");
 
             _logger.LogInformation(
                 convertedBook ? "Converted and sent book. Book name: {book}, User: {user}" : "Sent book without conversion. Book name: {book}, User: {user}",
