@@ -167,6 +167,9 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
                 return;
             }
 
+            // Hack to clear the typing progress
+            // await _botClient.DeleteMessage(chat, sendMsg.Id);
+            // await _botClient.SendMessage(chat, "💌 Successfully sent your book!");
             await _botClient.EditMessageText(chat, sendMsg.Id, "💌 Successfully sent your book!");
 
             _logger.LogInformation(
