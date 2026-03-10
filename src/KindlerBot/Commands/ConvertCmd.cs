@@ -159,7 +159,7 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
             }
 
             var sendMsg = await _botClient.SendMessage(chat, $"✉️ Sending to your Kindle device...");
-            await _botClient.SendChatAction(chat, ChatAction.Typing);
+            // await _botClient.SendChatAction(chat, ChatAction.Typing);
             var sendResult = await _calibreCli.SendBookToEmail(convertedFilePath, email);
             if (!sendResult.IsSuccessful)
             {
