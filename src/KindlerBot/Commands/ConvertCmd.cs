@@ -82,7 +82,7 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
                 tempDir.SuppressCleanup();
             }
 
-            var downloadingMsg = await _botClient.SendMessage(chat, "⏬ Downloading file...");
+            var bookInfoMsg = await _botClient.SendMessage(chat, "⏬ Downloading file...");
             var docFileInfo = await _botClient.GetFile(doc.FileId);
 
             var filePath = Path.Join(tempDir.DirPath, doc.FileName);
@@ -91,7 +91,7 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
                 await _botClient.DownloadFile(docFileInfo.FilePath!, fileStream);
             }
 
-            await _botClient.EditMessageText(chat, downloadingMsg.MessageId, "✅ Downloaded file!");
+            await _botClient.EditMessageText(chat, bookInfoMsg.Id, "✅ Downloaded file!");
 
             var bookInfo = await _calibreCli.GetBookInfo(filePath);
             if (bookInfo.IsSuccessful)
@@ -103,7 +103,9 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
                 var newFileName = $"{docCaption ?? bookTitle}{Path.GetExtension(filePath)}";
                 var newFilePath = Path.Join(tempDir.DirPath, ReplaceInvalidPathChars(newFileName));
 
-                await _botClient.SendMessage(chat, $"📖 *{Markdown.Escape(newFileName)}*\nTitle: {Markdown.Escape(bookTitle)}\nAuthor: {Markdown.Escape(bookAuthor)}", ParseMode.MarkdownV2);
+
+
+                await _botClient.EditMessageText(chat, bookInfoMsg.Id, $"📖 *{Markdown.Escape(newFileName)}*\nTitle: {Markdown.Escape(bookTitle)}\nAuthor: {Markdown.Escape(bookAuthor)}", ParseMode.MarkdownV2);
 
                 if (!string.Equals(filePath, newFilePath, StringComparison.Ordinal))
                 {
@@ -155,7 +157,7 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
                 }
             }
 
-            var sendingMsg = await _botClient.SendMessage(chat, $"✉️ Sending to your Kindle device...");
+            var sendMsg = await _botClient.SendMessage(chat, $"✉️ Sending to your Kindle device...");
             var sendResult = await _calibreCli.SendBookToEmail(convertedFilePath, email);
             if (!sendResult.IsSuccessful)
             {
@@ -163,7 +165,7 @@ internal class ConvertCmdHandler : IRequestHandler<ConvertCmdRequest>
                 return;
             }
 
-            await _botClient.EditMessageText(chat, sendingMsg.MessageId, "💌 Successfully sent your book!");
+            await _botClient.EditMessageText(chat, sendMsg.Id, "💌 Successfully sent your book!");
 
             _logger.LogInformation(
                 convertedBook ? "Converted and sent book. Book name: {book}, User: {user}" : "Sent book without conversion. Book name: {book}, User: {user}",
